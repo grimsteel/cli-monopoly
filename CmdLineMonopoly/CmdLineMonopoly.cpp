@@ -2,7 +2,22 @@
 //
 
 #include <iostream>
+#include <string>
 using namespace std;
+
+/*
+| Free Parking | Kentucky | Chance | Indiana Avenue | Illinois Avenue | B&O | Atlantic | Ventnor | Water Works | Marvin Gardens |
+*/
+
+class Property {
+public:
+    short price;
+    short mortgagePrice;
+    string name;
+    short housePrice;
+    unsigned char ownedBy = 255;
+    unsigned char numHouses = 0; // 5 houses equals 1 hotel
+};
 
 class Player {
 private:
@@ -43,7 +58,7 @@ void draw_options() {
 
 int main()
 {
-    GameBoard board();
+    GameBoard board;
     board.draw();
     cout << "What do you want to do? [1]: Move Right\n";
     int action;
