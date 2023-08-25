@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <string>
+#include <curses.h>
+
 using namespace std;
 
 /*
@@ -32,17 +34,7 @@ public:
     }
     void draw() {
         printf("\033c");
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                if (selectedX == i && selectedY == j) {
-                    cout << "*";
-                }
-                else {
-                    cout << "o";
-                }
-            }
-            cout << "\n";
-        }
+        cout << "o";
     }
     void moveX(unsigned char moveBy) {
         selectedX += moveBy;
@@ -58,7 +50,7 @@ void draw_options() {
 
 int main()
 {
-    GameBoard board;
+   /*  GameBoard board;
     board.draw();
     cout << "What do you want to do? [1]: Move Right\n";
     int action;
@@ -66,7 +58,29 @@ int main()
     if (action == 1) {
         board.moveX(1);
     }
-    board.draw();
+    board.draw(); */
+    initscr();
+    start_color();
+    WINDOW *parkPlace = newwin(13, 20, 5, 5);
+    refresh();
+
+    init_pair(1, COLOR_WHITE, COLOR_BLUE);
+    init_pair(2, 15, COLOR_BLACK);
+    box(parkPlace, 0, 0);
+    wattron(parkPlace, COLOR_PAIR(1));
+    mvwprintw(parkPlace, 1, 1, "                  ");
+    mvwprintw(parkPlace, 2, 1, "    Park Place    ");
+    mvwprintw(parkPlace, 3, 1, "                  ");
+    wattroff(parkPlace, COLOR_PAIR(1));
+    mvwprintw(parkPlace, 11, 5, "PRICE");
+    wattron(parkPlace, COLOR_PAIR(2));
+    mvwprintw(parkPlace, 11, 11, "$350");
+    wattroff(parkPlace, COLOR_PAIR(2));
+    
+    wrefresh(parkPlace);
+    getch();
+    delwin(parkPlace);
+    endwin();
     return 0;
 }
 
