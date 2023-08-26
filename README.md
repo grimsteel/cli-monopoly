@@ -14,4 +14,7 @@ Progress:
   - [ ] Houses
   - [ ] Chance/Community Chest
 - [ ] Console Interface
+  - [ ] Properties
+  - [ ] Menu
+  - [ ] Stats
 - [ ] Win32 GUI
