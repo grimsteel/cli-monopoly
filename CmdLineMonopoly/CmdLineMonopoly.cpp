@@ -88,7 +88,7 @@ void Property::drawInitial(string displayName) {
 RandomDraw::RandomDraw(int index, RandomDrawType type, BoardItemLocation location) : BoardItem(index, type == Chance ? "Chance" : "Community Chest", location), type(type) {}
 /// Draw the entire card. This should only be called at the start
 void RandomDraw::drawInitial(string displayName) {
-  mvwprintw(win, V_PROPERTY_HEIGHT / 2, 0, displayName.c_str());
+  mvwprintw(win, V_PROPERTY_HEIGHT / 2 - 1, 0, displayName.c_str());
 
   wborder(win, 0, ' ', 0, 0, ACS_TTEE, ACS_HLINE, ACS_BTEE, ACS_HLINE);
 
@@ -172,14 +172,14 @@ int main()
     &properties[13],
   };
   string boardItemReadableNames[] = {
-    " Mediterranean      Avenue    ",
+    " Mediterran ean Avenue",
     COMMUNITY_CHEST_DISPLAY,
-    "     Baltic         Avenue    ",
-    "    Reading        Railroad   ",
-    "    Oriental        Avenue    ",
+    "   Baltic     Avenue  ",
+    "   Reading   Railroad ",
+    "  Oriental    Avenue  ",
     CHANCE_DISPLAY,
-    "    Vermont         Avenue    ",
-    "  Connecticut       Avenue    ",
+    "  Vermont     Avenue  ",
+    " Connecticu  t Avenue ",
    /*  "   St. Charles      Place     ",
     "    Electric       Company    ",
     "     States         Avenue    ",
@@ -188,20 +188,20 @@ int main()
     "    St. James       Place     ",
     COMMUNITY_CHEST_DISPLAY,
     "   Tennessee        Avenue    ", */
-    "    Kentucky        Avenue    ",
+    "  Kentucky    Avenue  ",
     CHANCE_DISPLAY,
-    "    Indiana         Avenue    ",
-    "    Illinois        Avenue    ",
-    "     B. & O.       Railroad   ",
-    "    Atlantic        Avenue    ",
-    "    Ventnor         Avenue    ",
-    "     Water          Works     ",
-    "     Marvin        Gardens    ",
-    "    Pacific         Avenue    ",
-    "  North Carolina    Avenue    ",
-    "  Pennsylvania      Avenue    ",
-    "     Short           Line     ",
-    "      Park          Place     ",
+    "  Indiana     Avenue  ",
+    "  Illinois    Avenue  ",
+    "   B. & O.   Railroad ",
+    "  Atlantic    Avenue  ",
+    "  Ventnor     Avenue  ",
+    "   Water      Works   ",
+    "   Marvin    Gardens  ",
+    "  Pacific     Avenue  ",
+    " N. Carolina  Avenue  ",
+    "Pennsylvania  Avenue  ",
+    "   Short       Line   ",
+    "    Park      Place   ",
   };
   
   for (int i = 0; i < (sizeof(boardItems) / sizeof(BoardItem*)); i++) {

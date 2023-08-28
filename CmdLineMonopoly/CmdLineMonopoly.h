@@ -18,12 +18,12 @@ constexpr int BGT_GREEN = 7;
 constexpr int BGT_BLUE = 8;
 constexpr int BGT_BLACK = 9;
 
-// Each character is about 2x as tall as it is wide, so the height to width ratio is more like 20:15.
-constexpr int V_PROPERTY_HEIGHT = 10;
-constexpr int V_PROPERTY_WIDTH = 15;
+// Each character is about 2x as tall as it is wide, so the height to width ratio is more like 16:11.
+constexpr int V_PROPERTY_HEIGHT = 8;
+constexpr int V_PROPERTY_WIDTH = 11;
 
-constexpr int H_PROPERTY_WIDTH = 20;
-constexpr int H_PROPERTY_HEIGHT = 2;
+constexpr int H_PROPERTY_WIDTH = 16;
+constexpr int H_PROPERTY_HEIGHT = 5;
 
 // "Price $" is 7 characters, and most of the prices are 3 digits
 constexpr int AVG_PRICESTRING_WIDTH = 10;
@@ -34,8 +34,8 @@ constexpr int V_PRICESTRING_Y = V_PROPERTY_HEIGHT - 2;
 
 constexpr int PROPERTIES_PER_SIDE = 9;
 
-constexpr char CHANCE_DISPLAY[] = "     Chance";
-constexpr char COMMUNITY_CHEST_DISPLAY[] = "   Community\n     Chest";
+constexpr char CHANCE_DISPLAY[] = "   Chance";
+constexpr char COMMUNITY_CHEST_DISPLAY[] = " Community    Chest";
 
 enum BoardItemLocation {
   Bottom,
