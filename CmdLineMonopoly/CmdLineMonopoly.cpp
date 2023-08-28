@@ -61,21 +61,17 @@ void Property::drawInitial(string displayName) {
   wborder(win, 0, ' ', 0, 0, ACS_TTEE, ACS_HLINE, ACS_BTEE, ACS_HLINE);
 
   wattron(win, COLOR_PAIR(colorGroup));
-  if (location == Bottom) {
-    mvwprintw(win, 1, 0, displayName.c_str());
-  } else if (location == Top) {
-    // The name label is 2 high, so we move 2 + 1 (the border) above the bottom
-    mvwprintw(win, V_PROPERTY_HEIGHT - 3, 0, displayName.c_str());
-  }
+  // The name label is 2 high, so we move 2 + 1 (the border) above the bottom if it's a top oriented one
+  wmove(win, location == Bottom ? 1 : V_PROPERTY_HEIGHT - 3, 0);
+  wprintw(win, displayName.c_str());
+
   wattroff(win, COLOR_PAIR(colorGroup));
   
   mvwvline(win, 1, 0, 0, V_PROPERTY_HEIGHT - 2);
 
-  if (location == Bottom) {
-    mvwprintw(win, V_PRICESTRING_Y, V_PRICESTRING_X, "PRICE $");
-  } else if (location == Top) {
-    mvwprintw(win, 1, V_PRICESTRING_X, "PRICE $");
-  }
+  wmove(win, location == Bottom ? V_PRICESTRING_Y : 1, V_PRICESTRING_X);
+
+  wprintw(win, "PRICE $");
 
   wattron(win, A_UNDERLINE | A_BOLD);
   wprintw(win, to_string(price).c_str());
