@@ -76,23 +76,31 @@ void Property::drawInitial(string displayName) {
       break;
     case Left:
       // The vertical labels are 2 high, which means horizontal ones are about 4 wide, plus the border
-      wmove(win, 1, H_PROPERTY_WIDTH - 5);
+      wmove(win, 1, 0);
       break;
   }
 
   wprintw(win, displayName.c_str());
 
   wattroff(win, COLOR_PAIR(colorGroup));
-  
-  mvwvline(win, 1, 0, 0, V_PROPERTY_HEIGHT - 2);
+
+  if (location <= Top) {
+    mvwvline(win, 1, 0, 0, V_PROPERTY_HEIGHT - 2);
+  }
+  else {
+    mvwvline(win, 1, H_PROPERTY_WIDTH - 1, 0, H_PROPERTY_HEIGHT - 2);
+    mvwvline(win, 1, 0, 0, H_PROPERTY_HEIGHT - 2);
+  }
 
   wmove(win, location == Bottom ? V_PRICESTRING_Y : 1, V_PRICESTRING_X);
 
-  wprintw(win, "PRICE $");
+  if (location <= Top) {
+    wprintw(win, "PRICE $");
+    wattron(win, A_UNDERLINE | A_BOLD);
+    wprintw(win, to_string(price).c_str());
+    wattroff(win, A_UNDERLINE | A_BOLD);
+  }
 
-  wattron(win, A_UNDERLINE | A_BOLD);
-  wprintw(win, to_string(price).c_str());
-  wattroff(win, A_UNDERLINE | A_BOLD);
   wnoutrefresh(win);
 }
 /* #endregion */
@@ -223,7 +231,7 @@ int main()
     CHANCE_DISPLAY,
     "  Vermont     Avenue  ",
     " Connecticu  t Avenue ",
-    "St. Charles Place",
+    " St. Charles Place",
     "Electric Company",
     "States Avenue",
     "Virginia Avenue",
