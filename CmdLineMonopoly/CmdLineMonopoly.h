@@ -39,8 +39,8 @@ constexpr char COMMUNITY_CHEST_DISPLAY[] = " Community    Chest";
 
 enum BoardItemLocation {
   Bottom,
-  Left,
   Top,
+  Left,
   Right
 };
 

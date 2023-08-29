@@ -57,12 +57,29 @@ Property::Property(int index, string name, short price, unsigned char colorGroup
 
 /// Draw the entire card. This should only be called at the start
 void Property::drawInitial(string displayName) {
-  // bottom tee and top tee - instead of being corners, they are Ts - connected to other property cards
-  wborder(win, 0, ' ', 0, 0, ACS_TTEE, ACS_HLINE, ACS_BTEE, ACS_HLINE);
+  if (location <= Top) { // Top or Bottom
+    // bottom tee and top tee - instead of being corners, they are Ts - connected to other property cards
+    wborder(win, 0, ' ', 0, 0, ACS_TTEE, ACS_HLINE, ACS_BTEE, ACS_HLINE);
+  } else { // Left or Right
+    wborder(win, 0, 0, 0, ' ', ACS_LTEE, ACS_RTEE, ACS_VLINE, ACS_VLINE);
+  }
 
   wattron(win, COLOR_PAIR(colorGroup));
-  // The name label is 2 high, so we move 2 + 1 (the border) above the bottom if it's a top oriented one
-  wmove(win, location == Bottom ? 1 : V_PROPERTY_HEIGHT - 3, 0);
+
+  switch (location) {
+    case Bottom:
+      wmove(win, 1, 0);
+      break;
+    case Top:
+      // The name label is 2 high, so we move 2 + 1 (the border) above the bottom
+      wmove(win, V_PROPERTY_HEIGHT - 3, 0);
+      break;
+    case Left:
+      // The vertical labels are 2 high, which means horizontal ones are about 4 wide, plus the border
+      wmove(win, 1, H_PROPERTY_WIDTH - 5);
+      break;
+  }
+
   wprintw(win, displayName.c_str());
 
   wattroff(win, COLOR_PAIR(colorGroup));
@@ -84,9 +101,14 @@ void Property::drawInitial(string displayName) {
 RandomDraw::RandomDraw(int index, RandomDrawType type, BoardItemLocation location) : BoardItem(index, type == Chance ? "Chance" : "Community Chest", location), type(type) {}
 /// Draw the entire card. This should only be called at the start
 void RandomDraw::drawInitial(string displayName) {
-  mvwprintw(win, V_PROPERTY_HEIGHT / 2 - 1, 0, displayName.c_str());
-
-  wborder(win, 0, ' ', 0, 0, ACS_TTEE, ACS_HLINE, ACS_BTEE, ACS_HLINE);
+  if (location <= Top) { // Top or Bottom
+    mvwprintw(win, V_PROPERTY_HEIGHT / 2 - 1, 0, displayName.c_str());
+    // bottom tee and top tee - instead of being corners, they are Ts - connected to other property cards
+    wborder(win, 0, ' ', 0, 0, ACS_TTEE, ACS_HLINE, ACS_BTEE, ACS_HLINE);
+  } else { // Left or Right
+    mvwprintw(win, H_PROPERTY_HEIGHT / 2 - 1, 0, displayName.c_str());
+    wborder(win, 0, 0, 0, ' ', ACS_LTEE, ACS_RTEE, ACS_VLINE, ACS_VLINE);
+  }
 
   wnoutrefresh(win);
 }
@@ -103,50 +125,63 @@ int main()
   initscr();
   curs_set(FALSE);
   noecho();
-  scrollok(stdscr, TRUE);
+
+  // Colors
   start_color();
-  init_pair(BGT_PURPLE, COLOR_WHITE, COLOR_MAGENTA | 0b1000); // black on light magenta
+  init_pair(BGT_PURPLE, COLOR_WHITE, COLOR_MAGENTA | 0b1000); // black on light magenta (somehow this looks purple)
   init_pair(BGT_LBLUE, COLOR_BLACK, COLOR_CYAN | 0b1000); // black on light cyan
   init_pair(BGT_PINK, COLOR_WHITE, COLOR_MAGENTA);
-  init_pair(BGT_ORANGE, COLOR_BLACK, COLOR_RED | 0b1000);
+  init_pair(BGT_ORANGE, COLOR_BLACK, COLOR_RED | 0b1000); // black on light red (orange?)
   init_pair(BGT_RED, COLOR_WHITE, COLOR_RED);
   init_pair(BGT_YELLOW, COLOR_BLACK, COLOR_YELLOW);
   init_pair(BGT_GREEN, COLOR_WHITE, COLOR_GREEN);
   init_pair(BGT_BLUE, COLOR_WHITE, COLOR_BLUE);
   init_pair(BGT_BLACK, COLOR_WHITE, COLOR_BLACK);
 
-  // Note: The reason I'm not using a for loop here is because I don't want to invoke copy constructors and deal with unecessary memory (de)allocation.
-  // This is much faster, and is statically included in the executable.
+  // The strings here are what show up in prompts ("Would you like to buy Baltic Avenue?")
   Property properties[] = {
-    PROPERTY_B(0, "Mediterranean Avenue", 60, BGT_PURPLE),
+    Property(0, "Mediterranean Avenue", 60, BGT_PURPLE, Bottom),
     // community chest
-    PROPERTY_B(2, "Baltic Avenue", 60, BGT_PURPLE),
+    Property(2, "Baltic Avenue", 60, BGT_PURPLE, Bottom),
     // income tax
-    PROPERTY_B(4, "Reading Railroad", 200, BGT_BLACK),
-    PROPERTY_B(5, "Oriental Avenue", 100, BGT_LBLUE),
+    Property(4, "Reading Railroad", 200, BGT_BLACK, Bottom),
+    Property(5, "Oriental Avenue", 100, BGT_LBLUE, Bottom),
     // chance
-    PROPERTY_B(7, "Vermont Avenue", 100, BGT_LBLUE),
-    PROPERTY_B(8, "Connecticut Avenue", 120, BGT_LBLUE),
+    Property(7, "Vermont Avenue", 100, BGT_LBLUE, Bottom),
+    Property(8, "Connecticut Avenue", 120, BGT_LBLUE, Bottom),
 
-    PROPERTY_T(0, "Kentucky Avenue", 220, BGT_RED),
+    Property(0, "St. Charles Place", 140, BGT_PINK, Left),
+    Property(1, "Electric Company", 150, BGT_BLACK, Left),
+    Property(2, "States Avenue", 140, BGT_PINK, Left),
+    Property(3, "Virginia Avenue", 150, BGT_PINK, Left),
+    Property(4, "Pennsylvania Railroad", 200, BGT_BLACK, Left),
+    Property(5, "St. James Place", 180, BGT_ORANGE, Left),
+    // community chest
+    Property(7, "Tennessee Avenue", 180, BGT_ORANGE, Left),
+    Property(8, "New York Avenue", 200, BGT_ORANGE, Left),
+
+    Property(0, "Kentucky Avenue", 220, BGT_RED, Top),
     // chance
-    PROPERTY_T(2, "Indiana Avenue", 220, BGT_RED),
-    PROPERTY_T(3, "Illinois Avenue", 240, BGT_RED),
-    PROPERTY_T(4, "B. & O. Railroad", 200, BGT_BLACK),
-    PROPERTY_T(5, "Atlantic Avenue", 260, BGT_YELLOW),
-    PROPERTY_T(6, "Ventnor Avenue", 260, BGT_YELLOW),
-    PROPERTY_T(7, "Water Works", 150, BGT_BLACK),
-    PROPERTY_T(8, "Marvin Gardens", 280, BGT_YELLOW),
+    Property(2, "Indiana Avenue", 220, BGT_RED, Top),
+    Property(3, "Illinois Avenue", 240, BGT_RED, Top),
+    Property(4, "B. & O. Railroad", 200, BGT_BLACK, Top),
+    Property(5, "Atlantic Avenue", 260, BGT_YELLOW, Top),
+    Property(6, "Ventnor Avenue", 260, BGT_YELLOW, Top),
+    Property(7, "Water Works", 150, BGT_BLACK, Top),
+    Property(8, "Marvin Gardens", 280, BGT_YELLOW, Top),
   };
 
   RandomDraw randomDrawItems[] = {
     RandomDraw(1, RandomDraw::CommunityChest, Bottom),
     RandomDraw(6, RandomDraw::Chance, Bottom),
+    RandomDraw(6, RandomDraw::CommunityChest, Left),
     RandomDraw(1, RandomDraw::Chance, Top)
   };
 
   wnoutrefresh(stdscr);
 
+  // I wish I could use a for loop here, but that would really just create unnecessary complexity and slow the initialization down.
+  // Manually ordering each of the items is by far the fastest solution
   BoardItem* boardItems[] = {
     &properties[0],
     &randomDrawItems[0],
@@ -158,15 +193,27 @@ int main()
     &properties[5],
 
     &properties[6],
-    &randomDrawItems[2],
     &properties[7],
     &properties[8],
     &properties[9],
     &properties[10],
     &properties[11],
+    &randomDrawItems[2],
     &properties[12],
     &properties[13],
+
+    &properties[14],
+    &randomDrawItems[3],
+    &properties[15],
+    &properties[16],
+    &properties[17],
+    &properties[18],
+    &properties[19],
+    &properties[20],
+    &properties[21],
   };
+
+  // The strings here are what show up on the rendered game board. Because of spacing issues, some of them use abbreviations.
   string boardItemReadableNames[] = {
     " Mediterran ean Avenue",
     COMMUNITY_CHEST_DISPLAY,
@@ -176,14 +223,15 @@ int main()
     CHANCE_DISPLAY,
     "  Vermont     Avenue  ",
     " Connecticu  t Avenue ",
-   /*  "   St. Charles      Place     ",
-    "    Electric       Company    ",
-    "     States         Avenue    ",
-    "    Virginia        Avenue    ",
-    "  Pennsylvania     Railroad   ",
-    "    St. James       Place     ",
+    "St. Charles Place",
+    "Electric Company",
+    "States Avenue",
+    "Virginia Avenue",
+    "Pennsylvania R.R.",
+    "St. James Place",
     COMMUNITY_CHEST_DISPLAY,
-    "   Tennessee        Avenue    ", */
+    "Tennessee Avenue",
+    "New York Avenue",
     "  Kentucky    Avenue  ",
     CHANCE_DISPLAY,
     "  Indiana     Avenue  ",
