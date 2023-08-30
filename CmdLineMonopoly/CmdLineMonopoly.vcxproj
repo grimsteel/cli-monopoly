@@ -77,9 +77,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BoardItems.cpp" />
     <ClCompile Include="CmdLineMonopoly.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BoardItems.h" />
     <ClInclude Include="CmdLineMonopoly.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
