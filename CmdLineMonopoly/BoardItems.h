@@ -21,46 +21,44 @@ constexpr char COMMUNITY_CHEST_DISPLAY_H[] = "   Community         Chest";
 constexpr char INCOME_TAX_DISPLAY_V[] = "   Income      Tax";
 constexpr char LUXURY_TAX_DISPLAY_H[] = "   Luxury Tax";
 
-enum BoardItemLocation {
-    Bottom,
-    Top,
-    Left,
-    Right
-};
-
 class BoardItem {
 public:
-    BoardItem(int index, string name, BoardItemLocation location);
-    ~BoardItem();
-    void initWindow();
-    string name;
-    /// @brief Draw this entire item, using a specific display name
-    /// @param displayName The specific display name (formatted) to use
-    /// @warning If this is not implemented by a child class, it defaults to calling `drawInitial` without parameters
-    virtual void drawInitial(string displayName) { drawInitial(); }
-    /// @brief Same as drawInitial(string displayName) but try to infer a display name
-    /// Pure virtual
-    virtual void drawInitial() = 0;
-    void redraw();
+  enum BoardItemLocation {
+    Bottom = 1,
+    Top = 2,
+    Left = 4,
+    Right = 8
+  };
+  inline friend BoardItemLocation operator |(BoardItemLocation a, BoardItemLocation b) {
+    return static_cast<BoardItemLocation>(static_cast<int>(a) | static_cast<int>(b));
+  }
+  BoardItem(int index, string name, BoardItemLocation location);
+  ~BoardItem();
+  void initWindow();
+  string name;
+  /// @brief Draw this entire item
+  /// Pure virtual
+  virtual void drawInitial() = 0;
+  void redraw();
 protected:
-    WINDOW* win = nullptr;
-    BoardItemLocation location;
-    int index;
+  WINDOW* win = nullptr;
+  BoardItemLocation location;
+  int index;
 };
 
 /// A single Property card on the map
 class Property : public BoardItem {
 public:
-    Property(int index, string name, short price, unsigned char colorGroup, BoardItemLocation location);
-    short price;
-    short mortgagePrice;
-    short housePrice;
-    unsigned char ownedBy = 255; // 0-254 are player IDs, 255 is -1
-    unsigned char numHouses = 0; // 5 houses equals 1 hotel
-    void drawInitial(string displayName) override;
-    void drawInitial() override { drawInitial(name); }
+  Property(int index, string name, string displayName, short price, unsigned char colorGroup, BoardItemLocation location);
+  string displayName;
+  short price;
+  short mortgagePrice;
+  short housePrice;
+  unsigned char ownedBy = 255; // 0-254 are player IDs, 255 is -1
+  unsigned char numHouses = 0; // 5 houses equals 1 hotel
+  void drawInitial() override;
 private:
-    unsigned char colorGroup;
+  unsigned char colorGroup;
 };
 
 /// Chance or Community Chest
@@ -87,4 +85,29 @@ public:
     void drawInitial() override;
 private:
     TaxType type;
+};
+
+/// Four corners
+class Go : public BoardItem {
+public:
+  Go();
+  void drawInitial() override;
+};
+
+class Jail : public BoardItem {
+public:
+  Jail();
+  void drawInitial() override;
+};
+
+class FreeParking : public BoardItem {
+public:
+  FreeParking();
+  void drawInitial() override;
+};
+
+class GoToJail : public BoardItem {
+public:
+  GoToJail();
+  void drawInitial() override;
 };

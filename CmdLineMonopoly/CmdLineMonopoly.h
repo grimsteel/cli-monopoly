@@ -14,3 +14,5 @@ constexpr int BGT_YELLOW = 6;
 constexpr int BGT_GREEN = 7;
 constexpr int BGT_BLUE = 8;
 constexpr int BGT_BLACK = 9;
+
+void init_colors();
