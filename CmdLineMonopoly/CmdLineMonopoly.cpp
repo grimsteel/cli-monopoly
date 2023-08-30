@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#define PDC_WIDE
 #include <curses.h>
 #include "CmdLineMonopoly.h"
 
@@ -17,6 +18,13 @@ BoardItem::BoardItem(int index, string name, BoardItemLocation location) : index
 }
 BoardItem::~BoardItem() {
   delwin(win);
+}
+void BoardItem::redraw() {
+  if (win != nullptr) {
+    wclear(win);
+    delwin(win);
+  }
+  initWindow();
 }
 void BoardItem::initWindow() {
   if (location == Bottom) {
@@ -75,6 +83,7 @@ void Property::drawInitial(string displayName) {
       wmove(win, V_PROPERTY_HEIGHT - 3, 0);
       break;
     case Left:
+    case Right:
       // The vertical labels are 2 high, which means horizontal ones are about 4 wide, plus the border
       wmove(win, 1, 0);
       break;
@@ -86,20 +95,18 @@ void Property::drawInitial(string displayName) {
 
   if (location <= Top) {
     mvwvline(win, 1, 0, 0, V_PROPERTY_HEIGHT - 2);
-  }
-  else {
-    mvwvline(win, 1, H_PROPERTY_WIDTH - 1, 0, H_PROPERTY_HEIGHT - 2);
+    // right above the border if it's bottom, and right next to the left border
+    wmove(win, location == Bottom ? V_PROPERTY_HEIGHT - 2 : 1, 1); // get ready to print the price string
+  } else {
     mvwvline(win, 1, 0, 0, H_PROPERTY_HEIGHT - 2);
+    // we only do - 1 here because the horizontal properties don't do the bottom border (on the other hand, the vertical properties don't do the right border)
+    wmove(win, H_PROPERTY_HEIGHT - 1, 3);
   }
 
-  wmove(win, location == Bottom ? V_PRICESTRING_Y : 1, V_PRICESTRING_X);
-
-  if (location <= Top) {
-    wprintw(win, "PRICE $");
-    wattron(win, A_UNDERLINE | A_BOLD);
-    wprintw(win, to_string(price).c_str());
-    wattroff(win, A_UNDERLINE | A_BOLD);
-  }
+  wprintw(win, "PRICE $");
+  wattron(win, A_UNDERLINE | A_BOLD);
+  wprintw(win, to_string(price).c_str());
+  wattroff(win, A_UNDERLINE | A_BOLD);
 
   wnoutrefresh(win);
 }
@@ -108,14 +115,41 @@ void Property::drawInitial(string displayName) {
 /* #region RandomDraw class definition */
 RandomDraw::RandomDraw(int index, RandomDrawType type, BoardItemLocation location) : BoardItem(index, type == Chance ? "Chance" : "Community Chest", location), type(type) {}
 /// Draw the entire card. This should only be called at the start
-void RandomDraw::drawInitial(string displayName) {
+void RandomDraw::drawInitial() {
   if (location <= Top) { // Top or Bottom
-    mvwprintw(win, V_PROPERTY_HEIGHT / 2 - 1, 0, displayName.c_str());
+    mvwprintw(win, V_PROPERTY_HEIGHT / 2 - 1, 0, type == Chance ? CHANCE_DISPLAY_V : COMMUNITY_CHEST_DISPLAY_V);
     // bottom tee and top tee - instead of being corners, they are Ts - connected to other property cards
     wborder(win, 0, ' ', 0, 0, ACS_TTEE, ACS_HLINE, ACS_BTEE, ACS_HLINE);
   } else { // Left or Right
-    mvwprintw(win, H_PROPERTY_HEIGHT / 2 - 1, 0, displayName.c_str());
+    mvwprintw(win, H_PROPERTY_HEIGHT / 2, 0, type == Chance ? CHANCE_DISPLAY_H : COMMUNITY_CHEST_DISPLAY_H);
     wborder(win, 0, 0, 0, ' ', ACS_LTEE, ACS_RTEE, ACS_VLINE, ACS_VLINE);
+  }
+
+  wnoutrefresh(win);
+}
+/* #endregion */
+
+/* #region TaxItem class definition */
+TaxItem::TaxItem(int index, TaxType type, BoardItemLocation location) : BoardItem(index, type == Income ? "Income Tax" : "Luxury Tax", location), type(type) {}
+/// Draw the entire card. This should only be called at the start
+void TaxItem::drawInitial() {
+  if (type == Income) {
+    // this is on the bottom row
+    mvwprintw(win, V_PROPERTY_HEIGHT / 2 - 1, 0, INCOME_TAX_DISPLAY_V);
+    mvwprintw(win, V_PROPERTY_HEIGHT - 2, 2, "PAY $");
+    wattron(win, A_UNDERLINE | A_BOLD);
+    wprintw(win, "200");
+    wattroff(win, A_UNDERLINE | A_BOLD);
+    // bottom tee and top tee - instead of being corners, they are Ts - connected to other property cards
+    wborder(win, 0, ' ', 0, 0, ACS_TTEE, ACS_HLINE, ACS_BTEE, ACS_HLINE);
+  } else {
+    // luxury tax - this is on the right side
+    mvwprintw(win, H_PROPERTY_HEIGHT / 2, 0, LUXURY_TAX_DISPLAY_H);
+    wborder(win, 0, 0, 0, ' ', ACS_LTEE, ACS_RTEE, ACS_VLINE, ACS_VLINE);
+    mvwprintw(win, H_PROPERTY_HEIGHT - 1, 4, "PAY $"); // this comes after because the border will overwrite it otherwise
+    wattron(win, A_UNDERLINE | A_BOLD);
+    wprintw(win, "75");
+    wattroff(win, A_UNDERLINE | A_BOLD);
   }
 
   wnoutrefresh(win);
@@ -142,7 +176,7 @@ int main()
   init_pair(BGT_ORANGE, COLOR_BLACK, COLOR_RED | 0b1000); // black on light red (orange?)
   init_pair(BGT_RED, COLOR_WHITE, COLOR_RED);
   init_pair(BGT_YELLOW, COLOR_BLACK, COLOR_YELLOW);
-  init_pair(BGT_GREEN, COLOR_WHITE, COLOR_GREEN);
+  init_pair(BGT_GREEN, COLOR_BLACK, COLOR_GREEN);
   init_pair(BGT_BLUE, COLOR_WHITE, COLOR_BLUE);
   init_pair(BGT_BLACK, COLOR_WHITE, COLOR_BLACK);
 
@@ -177,14 +211,29 @@ int main()
     Property(6, "Ventnor Avenue", 260, BGT_YELLOW, Top),
     Property(7, "Water Works", 150, BGT_BLACK, Top),
     Property(8, "Marvin Gardens", 280, BGT_YELLOW, Top),
+
+    Property(0, "Pacific Avenue", 300, BGT_GREEN, Right),
+    Property(1, "North Carolina Avenue", 300, BGT_GREEN, Right),
+    // community chest
+    Property(3, "Pennsylvania Avenue", 320, BGT_GREEN, Right),
+    Property(4, "Short Line", 200, BGT_BLACK, Right),
+    // chance
+    Property(6, "Park Place", 350, BGT_BLUE, Right),
+    // luxury tax
+    Property(8, "Boardwalk", 400, BGT_BLUE, Right)
   };
 
   RandomDraw randomDrawItems[] = {
     RandomDraw(1, RandomDraw::CommunityChest, Bottom),
     RandomDraw(6, RandomDraw::Chance, Bottom),
     RandomDraw(6, RandomDraw::CommunityChest, Left),
-    RandomDraw(1, RandomDraw::Chance, Top)
+    RandomDraw(1, RandomDraw::Chance, Top),
+    RandomDraw(2, RandomDraw::CommunityChest, Right),
+    RandomDraw(5, RandomDraw::Chance, Right)
   };
+
+  TaxItem incomeTax(3, TaxItem::Income, Bottom);
+  TaxItem luxuryTax(7, TaxItem::Luxury, Right);
 
   wnoutrefresh(stdscr);
 
@@ -194,6 +243,7 @@ int main()
     &properties[0],
     &randomDrawItems[0],
     &properties[1],
+    &incomeTax,
     &properties[2],
     &properties[3],
     &randomDrawItems[1],
@@ -219,29 +269,35 @@ int main()
     &properties[19],
     &properties[20],
     &properties[21],
+
+    &properties[22],
+    &properties[23],
+    &randomDrawItems[4],
+    &properties[24],
+    &properties[25],
+    &randomDrawItems[5],
+    &properties[26],
+    &luxuryTax,
+    &properties[27]
   };
 
   // The strings here are what show up on the rendered game board. Because of spacing issues, some of them use abbreviations.
-  string boardItemReadableNames[] = {
+  string propertyReadableNames[] = {
     " Mediterran ean Avenue",
-    COMMUNITY_CHEST_DISPLAY,
     "   Baltic     Avenue  ",
     "   Reading   Railroad ",
     "  Oriental    Avenue  ",
-    CHANCE_DISPLAY,
     "  Vermont     Avenue  ",
     " Connecticu  t Avenue ",
-    " St. Charles Place",
-    "Electric Company",
-    "States Avenue",
-    "Virginia Avenue",
-    "Pennsylvania R.R.",
-    "St. James Place",
-    COMMUNITY_CHEST_DISPLAY,
-    "Tennessee Avenue",
-    "New York Avenue",
+    " St Charles Pl.",
+    "  Electric Co. ",
+    " States Avenue ",
+    " Virginia Ave. ",
+    " Penn. Railroad",
+    " St. James Pl. ",
+    " Tennessee Ave.",
+    " New York Ave. ",
     "  Kentucky    Avenue  ",
-    CHANCE_DISPLAY,
     "  Indiana     Avenue  ",
     "  Illinois    Avenue  ",
     "   B. & O.   Railroad ",
@@ -249,16 +305,24 @@ int main()
     "  Ventnor     Avenue  ",
     "   Water      Works   ",
     "   Marvin    Gardens  ",
-    "  Pacific     Avenue  ",
-    " N. Carolina  Avenue  ",
-    "Pennsylvania  Avenue  ",
-    "   Short       Line   ",
-    "    Park      Place   ",
+    "  Pacific Ave. ",
+    " N Carolina Ave",
+    "  Penn. Avenue ",
+    "   Short Line  ",
+    "   Park Place  ",
+    "   Boardwalk   ",
   };
   
-  for (int i = 0; i < (sizeof(boardItems) / sizeof(BoardItem*)); i++) {
-    boardItems[i]->drawInitial(boardItemReadableNames[i]);
+  for (int i = 0; i < (sizeof(properties) / sizeof(Property)); i++) {
+    properties[i].drawInitial(propertyReadableNames[i]);
   }
+
+  for (int i = 0; i < (sizeof(randomDrawItems) / sizeof(RandomDraw)); i++) {
+    randomDrawItems[i].drawInitial();
+  }
+
+  luxuryTax.drawInitial();
+  incomeTax.drawInitial();
 
   doupdate();
 
@@ -271,9 +335,13 @@ int main()
     if (ch == KEY_RESIZE) {
       resize_term(0, 0);
       wnoutrefresh(stdscr);
-      for (int i = 0; i < (sizeof(boardItems) / sizeof(BoardItem*)); i++) {
-        boardItems[i]->redraw();
-        boardItems[i]->drawInitial(boardItemReadableNames[i]);
+      // TODO: optimize this
+      for (int i = 0; i < (sizeof(properties) / sizeof(Property)); i++) {
+        properties[i].redraw();
+        properties[i].drawInitial(propertyReadableNames[i]);
+      }
+      for (int i = 0; i < (sizeof(randomDrawItems) / sizeof(RandomDraw)); i++) {
+        randomDrawItems[i].drawInitial();
       }
       doupdate();
     } else if (ch == 'q') {

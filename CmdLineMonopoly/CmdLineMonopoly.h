@@ -25,17 +25,14 @@ constexpr int V_PROPERTY_WIDTH = 11;
 constexpr int H_PROPERTY_WIDTH = 16;
 constexpr int H_PROPERTY_HEIGHT = 5;
 
-// "Price $" is 7 characters, and most of the prices are 3 digits
-constexpr int AVG_PRICESTRING_WIDTH = 10;
-// Width - avg price string width divided by 2 is the distance from the left to the start of the price string
-constexpr int V_PRICESTRING_X = (V_PROPERTY_WIDTH - AVG_PRICESTRING_WIDTH + 1) / 2;
-// right above the bottom border
-constexpr int V_PRICESTRING_Y = V_PROPERTY_HEIGHT - 2;
-
 constexpr int PROPERTIES_PER_SIDE = 9;
 
-constexpr char CHANCE_DISPLAY[] = "   Chance";
-constexpr char COMMUNITY_CHEST_DISPLAY[] = " Community    Chest";
+constexpr char CHANCE_DISPLAY_V[] = "   Chance";
+constexpr char COMMUNITY_CHEST_DISPLAY_V[] = " Community    Chest";
+constexpr char CHANCE_DISPLAY_H[] = "     Chance";
+constexpr char COMMUNITY_CHEST_DISPLAY_H[] = "   Community         Chest";
+constexpr char INCOME_TAX_DISPLAY_V[] = "   Income      Tax";
+constexpr char LUXURY_TAX_DISPLAY_H[] = "   Luxury Tax";
 
 enum BoardItemLocation {
   Bottom,
@@ -50,14 +47,14 @@ public:
   ~BoardItem();
   void initWindow();
   string name;
-  virtual void drawInitial(string displayName) = 0;
-  void redraw() {
-    if (win != nullptr) {
-      wclear(win);
-      delwin(win);
-    }
-    initWindow();
-  }
+  /// @brief Draw this entire item, using a specific display name
+  /// @param displayName The specific display name (formatted) to use
+  /// @warning If this is not implemented by a child class, it defaults to calling `drawInitial` without parameters
+  virtual void drawInitial(string displayName) { drawInitial(); }
+  /// @brief Same as drawInitial(string displayName) but try to infer a display name
+  /// Pure virtual
+  virtual void drawInitial() = 0;
+  void redraw();
 protected:
   WINDOW *win = nullptr;
   BoardItemLocation location;
@@ -74,6 +71,7 @@ public:
   unsigned char ownedBy = 255; // 0-254 are player IDs, 255 is -1
   unsigned char numHouses = 0; // 5 houses equals 1 hotel
   void drawInitial(string displayName) override;
+  void drawInitial() override { drawInitial(name); }
 private:
   unsigned char colorGroup;
 };
@@ -86,7 +84,20 @@ public:
     CommunityChest
   };
   RandomDraw(int index, RandomDrawType type, BoardItemLocation location);
-  void drawInitial(string displayName) override;
+  void drawInitial() override;
 private:
   RandomDrawType type;
+};
+
+/// Luxury/Income tax
+class TaxItem : public BoardItem {
+public:
+  enum TaxType {
+    Income,
+    Luxury
+  };
+  TaxItem(int index, TaxType type, BoardItemLocation location);
+  void drawInitial() override;
+private:
+  TaxType type;
 };
