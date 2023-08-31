@@ -1,7 +1,7 @@
 #include "BoardItems.h"
 #include <curses.h>
 
-/* #region BoardItem class definition */
+#pragma region BoardItem class definition
 BoardItem::BoardItem(int index, string name, BoardItemLocation location) : index(index), name(name), location(location) {
   initWindow();
 }
@@ -22,56 +22,67 @@ void BoardItem::initWindow() {
       win = newwin(
         V_PROPERTY_HEIGHT,
         H_PROPERTY_WIDTH,
-        V_PROPERTY_HEIGHT + H_PROPERTY_HEIGHT * PROPERTIES_PER_SIDE, // the y value is the height of the top property row plus the total height of the 9 properties on the side
+        V_PROPERTY_HEIGHT + H_PROPERTY_HEIGHT * PROPERTIES_PER_SIDE - 1, // the y value is the height of the top property row plus the total height of the 9 properties on the side
         0
       );
     } else if (location & Right) {
       win = newwin(
         V_PROPERTY_HEIGHT,
         H_PROPERTY_WIDTH,
-        V_PROPERTY_HEIGHT + H_PROPERTY_HEIGHT * PROPERTIES_PER_SIDE, // the y value is the height of the top property row plus the total height of the 9 properties on the side
-        H_PROPERTY_WIDTH + 9 * V_PROPERTY_WIDTH
+        V_PROPERTY_HEIGHT + H_PROPERTY_HEIGHT * PROPERTIES_PER_SIDE - 1, // the y value is the height of the top property row plus the total height of the 9 properties on the side
+        H_PROPERTY_WIDTH + PROPERTIES_PER_SIDE * V_PROPERTY_WIDTH - 1
       );
     } else {
       win = newwin(
         V_PROPERTY_HEIGHT,
         V_PROPERTY_WIDTH,
-        V_PROPERTY_HEIGHT + H_PROPERTY_HEIGHT * PROPERTIES_PER_SIDE, // the y value is the height of the top property row plus the total height of the 9 properties on the side
-        H_PROPERTY_WIDTH + (PROPERTIES_PER_SIDE - index - 1) * V_PROPERTY_WIDTH // index 0 is the right side on the bottom row (start at mediterranean)
+        V_PROPERTY_HEIGHT + H_PROPERTY_HEIGHT * PROPERTIES_PER_SIDE - 1, // the y value is the height of the top property row plus the total height of the 9 properties on the side
+        // index 0 is the right side on the bottom row (start at mediterranean)
+        H_PROPERTY_WIDTH + (PROPERTIES_PER_SIDE - index - 1) * V_PROPERTY_WIDTH - 1 // subtract one because the bottom row needs to start on the same column as the left
       );
     }
   } else if (location & Top) {
     if (location & Left) {
-
+      win = newwin(
+        V_PROPERTY_HEIGHT,
+        H_PROPERTY_WIDTH,
+        0,
+        0
+      );
     } else if (location & Right) {
-
+      win = newwin(
+        V_PROPERTY_HEIGHT,
+        H_PROPERTY_WIDTH,
+        0,
+        H_PROPERTY_WIDTH + PROPERTIES_PER_SIDE * V_PROPERTY_WIDTH - 1
+      );
     } else {
       win = newwin(
         V_PROPERTY_HEIGHT,
         V_PROPERTY_WIDTH,
         0,
-        H_PROPERTY_WIDTH + index * V_PROPERTY_WIDTH
+        H_PROPERTY_WIDTH + index * V_PROPERTY_WIDTH - 1
       );
     }
   } else if (location & Left) {
     win = newwin(
       H_PROPERTY_HEIGHT,
       H_PROPERTY_WIDTH,
-      V_PROPERTY_HEIGHT + (PROPERTIES_PER_SIDE - index - 1) * H_PROPERTY_HEIGHT, // index 0 is at the bottom at st. charles
+      V_PROPERTY_HEIGHT + (PROPERTIES_PER_SIDE - index - 1) * H_PROPERTY_HEIGHT - 1, // index 0 is at the bottom at st. charles
       0
     );
   } else if (location & Right) {
     win = newwin(
       H_PROPERTY_HEIGHT,
       H_PROPERTY_WIDTH,
-      V_PROPERTY_HEIGHT + index * H_PROPERTY_HEIGHT,
-      H_PROPERTY_WIDTH + V_PROPERTY_WIDTH * PROPERTIES_PER_SIDE
+      V_PROPERTY_HEIGHT + index * H_PROPERTY_HEIGHT - 1,
+      H_PROPERTY_WIDTH + V_PROPERTY_WIDTH * PROPERTIES_PER_SIDE - 1
     );
   }
 }
-/* #endregion */
+#pragma endregion
 
-/* #region Property class definition */
+#pragma region Property class definition
 Property::Property(int index, string name, string displayName, short price, unsigned char colorGroup, BoardItemLocation location)
   : BoardItem(index, name, location), displayName(displayName), price(price), colorGroup(colorGroup) {}
 
@@ -122,9 +133,9 @@ void Property::drawInitial() {
 
   wnoutrefresh(win);
 }
-/* #endregion */
+#pragma endregion
 
-/* #region RandomDraw class definition */
+#pragma region RandomDraw class definition
 RandomDraw::RandomDraw(int index, RandomDrawType type, BoardItemLocation location) : BoardItem(index, type == Chance ? "Chance" : "Community Chest", location), type(type) {}
 /// Draw the entire card. This should only be called at the start
 void RandomDraw::drawInitial() {
@@ -139,9 +150,9 @@ void RandomDraw::drawInitial() {
 
   wnoutrefresh(win);
 }
-/* #endregion */
+#pragma endregion
 
-/* #region TaxItem class definition */
+#pragma region TaxItem class definition
 TaxItem::TaxItem(int index, TaxType type, BoardItemLocation location) : BoardItem(index, type == Income ? "Income Tax" : "Luxury Tax", location), type(type) {}
 /// Draw the entire card. This should only be called at the start
 void TaxItem::drawInitial() {
@@ -166,27 +177,28 @@ void TaxItem::drawInitial() {
 
   wnoutrefresh(win);
 }
-/* #endregion */
+#pragma endregion
 
-/* #region Corners */
+#pragma region Corners
 Go::Go() : BoardItem(0, "Go", Bottom | Right) {}
 void Go::drawInitial() {
+  //                       tl        tr        bl        br
   wborder(win, 0, 0, 0, 0, ACS_PLUS, ACS_RTEE, ACS_BTEE, 0);
   wnoutrefresh(win);
 }
 Jail::Jail() : BoardItem(0, "Jail", Bottom | Left) {}
 void Jail::drawInitial() {
-  wborder(win, 0, 0, 0, 0, ACS_TTEE, ACS_HLINE, ACS_BTEE, ACS_HLINE);
+  wborder(win, 0, 0, 0, 0, ACS_LTEE, ACS_PLUS, 0, ACS_BTEE);
   wnoutrefresh(win);
 }
 FreeParking::FreeParking() : BoardItem(0, "Free Parking", Top | Left) {}
 void FreeParking::drawInitial() {
-  wborder(win, 0, 0, 0, 0, ACS_TTEE, ACS_HLINE, ACS_BTEE, ACS_HLINE);
+  wborder(win, 0, 0, 0, 0, 0, ACS_TTEE, ACS_LTEE, ACS_PLUS);
   wnoutrefresh(win);
 }
 GoToJail::GoToJail() : BoardItem(0, "Go to Jail", Top | Right) {}
 void GoToJail::drawInitial() {
-  wborder(win, 0, 0, 0, 0, ACS_TTEE, ACS_HLINE, ACS_BTEE, ACS_HLINE);
+  wborder(win, 0, 0, 0, 0, ACS_TTEE, 0, ACS_PLUS, ACS_RTEE);
   wnoutrefresh(win);
 }
-/* #endregion */
+#pragma endregion
