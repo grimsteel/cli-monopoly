@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#define PDC_WIDE
 #include <curses.h>
 #include "CmdLineMonopoly.h"
 #include "BoardItems.h"

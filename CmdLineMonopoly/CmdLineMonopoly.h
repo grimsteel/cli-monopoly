@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <curses.h>
 
 using namespace std;
 

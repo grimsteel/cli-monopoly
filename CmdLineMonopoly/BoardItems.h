@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#define PDC_WIDE
 #include <curses.h>
 
 using namespace std;

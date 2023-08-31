@@ -1,4 +1,5 @@
-#include "BoardItems.h"
+﻿#include "BoardItems.h"
+#define PDC_WIDE
 #include <curses.h>
 
 #pragma region BoardItem class definition
@@ -182,18 +183,28 @@ void TaxItem::drawInitial() {
 #pragma region Corners
 Go::Go() : BoardItem(0, "Go", Bottom | Right) {}
 void Go::drawInitial() {
-  //                       tl        tr        bl        br
+  mvwaddwstr(win, 1, 0, L"    ▄▄▄  ▄▄▄\n    █    █ █\n    █ █  █ █\n    ▀▀▀  ▀▀▀");
+  mvwprintw(win, V_PROPERTY_HEIGHT - 2, 2, "Collect $");
+  wattron(win, A_UNDERLINE | A_BOLD);
+  wprintw(win, "200");
+  wattroff(win, A_UNDERLINE | A_BOLD);
   wborder(win, 0, 0, 0, 0, ACS_PLUS, ACS_RTEE, ACS_BTEE, 0);
+  //mvwaddch(win, 2, 2, ACS_BLOCK);
+  //mvwaddwstr(win, V_PROPERTY_HEIGHT / 2 - 1, H_PROPERTY_WIDTH / 2 - 1, L"Go");
   wnoutrefresh(win);
 }
 Jail::Jail() : BoardItem(0, "Jail", Bottom | Left) {}
 void Jail::drawInitial() {
   wborder(win, 0, 0, 0, 0, ACS_LTEE, ACS_PLUS, 0, ACS_BTEE);
+  mvwaddch(win, 0, 8, ACS_TTEE);
+  mvwvline(win, 1, 8, 0, 4);
+  mvwhline(win, 4, 8, 0, 7);
   wnoutrefresh(win);
 }
 FreeParking::FreeParking() : BoardItem(0, "Free Parking", Top | Left) {}
 void FreeParking::drawInitial() {
   wborder(win, 0, 0, 0, 0, 0, ACS_TTEE, ACS_LTEE, ACS_PLUS);
+  mvwprintw(win, V_PROPERTY_HEIGHT / 2 - 1, 2, "Free Parking");
   wnoutrefresh(win);
 }
 GoToJail::GoToJail() : BoardItem(0, "Go to Jail", Top | Right) {}
