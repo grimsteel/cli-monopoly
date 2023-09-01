@@ -26,7 +26,7 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
-- task: VSTest@2
+- task: PublishPipelineArtifact@1
   inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    targetPath: $(System.DefaultWorkingDirectory)/x64/Release/CmdLineMonopoly.exe
+    artifactName: CmdLineMonopoly
