@@ -105,10 +105,12 @@ class FreeParking : public BoardItem {
 public:
   FreeParking();
   void drawInitial() override;
+  void fixBorder();
 };
 
 class GoToJail : public BoardItem {
 public:
   GoToJail();
   void drawInitial() override;
+  void fixBorder();
 };

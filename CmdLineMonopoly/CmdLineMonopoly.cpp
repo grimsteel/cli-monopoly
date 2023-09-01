@@ -122,6 +122,8 @@ int main()
   for (int i = 0; i < (sizeof(boardItems) / sizeof(BoardItem*)); i++) {
     boardItems[i]->drawInitial();
   }
+  freeParking.fixBorder();
+  goToJail.fixBorder();
 
   doupdate();
 

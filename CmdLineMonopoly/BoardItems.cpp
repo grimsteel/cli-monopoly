@@ -198,18 +198,28 @@ void Jail::drawInitial() {
   wborder(win, 0, 0, 0, 0, ACS_LTEE, ACS_PLUS, 0, ACS_BTEE);
   mvwaddch(win, 0, 8, ACS_TTEE);
   mvwvline(win, 1, 8, 0, 4);
-  mvwhline(win, 4, 8, 0, 7);
+  mvwaddch(win, 4, 8, ACS_LLCORNER);
+  whline(win, 0, 6);
+  mvwaddch(win, 4, H_PROPERTY_WIDTH - 1, ACS_RTEE);
   wnoutrefresh(win);
 }
 FreeParking::FreeParking() : BoardItem(0, "Free Parking", Top | Left) {}
 void FreeParking::drawInitial() {
-  wborder(win, 0, 0, 0, 0, 0, ACS_TTEE, ACS_LTEE, ACS_PLUS);
+  wborder(win, 0, 0, 0, 0, 0, ACS_TTEE, ACS_LTEE, 0);
   mvwprintw(win, V_PROPERTY_HEIGHT / 2 - 1, 2, "Free Parking");
+  wnoutrefresh(win);
+}
+void FreeParking::fixBorder() {
+  mvwaddch(win, V_PROPERTY_HEIGHT - 1, H_PROPERTY_WIDTH - 1, ACS_PLUS);
   wnoutrefresh(win);
 }
 GoToJail::GoToJail() : BoardItem(0, "Go to Jail", Top | Right) {}
 void GoToJail::drawInitial() {
-  wborder(win, 0, 0, 0, 0, ACS_TTEE, 0, ACS_PLUS, ACS_RTEE);
+  wborder(win, 0, 0, 0, 0, ACS_TTEE, 0, 0, ACS_RTEE);
+  wnoutrefresh(win);
+}
+void GoToJail::fixBorder() {
+  mvwaddch(win, V_PROPERTY_HEIGHT - 1, 0, ACS_PLUS);
   wnoutrefresh(win);
 }
 #pragma endregion
