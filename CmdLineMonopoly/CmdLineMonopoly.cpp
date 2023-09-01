@@ -10,6 +10,7 @@
 #include <curses.h>
 #include "CmdLineMonopoly.h"
 #include "BoardItems.h"
+#include "PlayerStats.h"
 
 using namespace std;
 
@@ -71,6 +72,7 @@ int main()
   Jail jail;
   FreeParking freeParking;
   GoToJail goToJail;
+  PlayerStats player1;
 
   wnoutrefresh(stdscr);
 
@@ -129,6 +131,8 @@ int main()
 
   keypad(stdscr, TRUE);
 
+  player1.getAttributes();
+
   while (true) {
     refresh();
     int ch = getch();
@@ -146,7 +150,7 @@ int main()
       break;
     }
   }
-  
+
   endwin();
   return 0;
 }
