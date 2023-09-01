@@ -20,64 +20,36 @@ void BoardItem::initWindow() {
   // The four sides
   if (location & Bottom) {
     if (location & Left) {
-      win = newwin(
-        V_PROPERTY_HEIGHT,
-        H_PROPERTY_WIDTH,
-        V_PROPERTY_HEIGHT + H_PROPERTY_HEIGHT * PROPERTIES_PER_SIDE - 1, // the y value is the height of the top property row plus the total height of the 9 properties on the side
-        0
-      );
+      win = C_WIN(BOTTOM_OFFSET, 0);
     } else if (location & Right) {
-      win = newwin(
-        V_PROPERTY_HEIGHT,
-        H_PROPERTY_WIDTH,
-        V_PROPERTY_HEIGHT + H_PROPERTY_HEIGHT * PROPERTIES_PER_SIDE - 1, // the y value is the height of the top property row plus the total height of the 9 properties on the side
-        H_PROPERTY_WIDTH + PROPERTIES_PER_SIDE * V_PROPERTY_WIDTH - 1
-      );
+      win = C_WIN(BOTTOM_OFFSET, RIGHT_OFFSET);
     } else {
-      win = newwin(
-        V_PROPERTY_HEIGHT,
-        V_PROPERTY_WIDTH,
-        V_PROPERTY_HEIGHT + H_PROPERTY_HEIGHT * PROPERTIES_PER_SIDE - 1, // the y value is the height of the top property row plus the total height of the 9 properties on the side
+      win = V_WIN(
+        BOTTOM_OFFSET,
         // index 0 is the right side on the bottom row (start at mediterranean)
         H_PROPERTY_WIDTH + (PROPERTIES_PER_SIDE - index - 1) * V_PROPERTY_WIDTH - 1 // subtract one because the bottom row needs to start on the same column as the left
       );
     }
   } else if (location & Top) {
     if (location & Left) {
-      win = newwin(
-        V_PROPERTY_HEIGHT,
-        H_PROPERTY_WIDTH,
-        0,
-        0
-      );
+      win = C_WIN(0, 0);
     } else if (location & Right) {
-      win = newwin(
-        V_PROPERTY_HEIGHT,
-        H_PROPERTY_WIDTH,
-        0,
-        H_PROPERTY_WIDTH + PROPERTIES_PER_SIDE * V_PROPERTY_WIDTH - 1
-      );
+      win = C_WIN(0, RIGHT_OFFSET);
     } else {
-      win = newwin(
-        V_PROPERTY_HEIGHT,
-        V_PROPERTY_WIDTH,
+      win = V_WIN(
         0,
         H_PROPERTY_WIDTH + index * V_PROPERTY_WIDTH - 1
       );
     }
   } else if (location & Left) {
-    win = newwin(
-      H_PROPERTY_HEIGHT,
-      H_PROPERTY_WIDTH,
+    win = H_WIN(
       V_PROPERTY_HEIGHT + (PROPERTIES_PER_SIDE - index - 1) * H_PROPERTY_HEIGHT - 1, // index 0 is at the bottom at st. charles
       0
     );
   } else if (location & Right) {
-    win = newwin(
-      H_PROPERTY_HEIGHT,
-      H_PROPERTY_WIDTH,
+    win = H_WIN(
       V_PROPERTY_HEIGHT + index * H_PROPERTY_HEIGHT - 1,
-      H_PROPERTY_WIDTH + V_PROPERTY_WIDTH * PROPERTIES_PER_SIDE - 1
+      RIGHT_OFFSET
     );
   }
 }
@@ -196,11 +168,13 @@ void Go::drawInitial() {
 Jail::Jail() : BoardItem(0, "Jail", Bottom | Left) {}
 void Jail::drawInitial() {
   wborder(win, 0, 0, 0, 0, ACS_LTEE, ACS_PLUS, 0, ACS_BTEE);
-  mvwaddch(win, 0, 8, ACS_TTEE);
-  mvwvline(win, 1, 8, 0, 4);
-  mvwaddch(win, 4, 8, ACS_LLCORNER);
-  whline(win, 0, 6);
-  mvwaddch(win, 4, H_PROPERTY_WIDTH - 1, ACS_RTEE);
+  mvwaddch(win, 0, JAIL_X, ACS_TTEE); // the -2 comes from the border and the fact that we need to get in front of the char
+  mvwvline(win, 1, JAIL_X, 0, JAIL_HEIGHT);
+  mvwaddch(win, JAIL_HEIGHT + 1, JAIL_X, ACS_LLCORNER);
+  whline(win, 0, JAIL_WIDTH);
+  mvwaddch(win, JAIL_HEIGHT + 1, H_PROPERTY_WIDTH - 1, ACS_RTEE);
+  mvwprintw(win, V_PROPERTY_HEIGHT - 2, 2, "Just Visiting");
+  mvwprintw(win, 2, JAIL_X + 2, "Jail");
   wnoutrefresh(win);
 }
 FreeParking::FreeParking() : BoardItem(0, "Free Parking", Top | Left) {}
@@ -216,6 +190,7 @@ void FreeParking::fixBorder() {
 GoToJail::GoToJail() : BoardItem(0, "Go to Jail", Top | Right) {}
 void GoToJail::drawInitial() {
   wborder(win, 0, 0, 0, 0, ACS_TTEE, 0, 0, ACS_RTEE);
+  mvwprintw(win, V_PROPERTY_HEIGHT / 2 - 1, 3, "Go to Jail");
   wnoutrefresh(win);
 }
 void GoToJail::fixBorder() {

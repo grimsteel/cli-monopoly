@@ -4,6 +4,10 @@
 #define PDC_WIDE
 #include <curses.h>
 
+#define V_WIN(y, x) newwin(V_PROPERTY_HEIGHT, V_PROPERTY_WIDTH, y, x);
+#define H_WIN(y, x) newwin(H_PROPERTY_HEIGHT, H_PROPERTY_WIDTH, y, x);
+#define C_WIN(y, x) newwin(V_PROPERTY_HEIGHT, H_PROPERTY_WIDTH, y, x);
+
 using namespace std;
 
 // Each character is about 2x as tall as it is wide, so the height to width ratio is more like 16:11.
@@ -14,6 +18,16 @@ constexpr int H_PROPERTY_WIDTH = 16;
 constexpr int H_PROPERTY_HEIGHT = 5;
 
 constexpr int PROPERTIES_PER_SIDE = 9;
+
+// We need to do -1 because the top border of the top left/right properties
+// are on the same row as the bottom border of the top properties
+// same reason for the right offset
+constexpr int BOTTOM_OFFSET = V_PROPERTY_HEIGHT + H_PROPERTY_HEIGHT * PROPERTIES_PER_SIDE - 1;
+constexpr int RIGHT_OFFSET = H_PROPERTY_WIDTH + PROPERTIES_PER_SIDE * V_PROPERTY_WIDTH - 1;
+
+constexpr int JAIL_HEIGHT = 3;
+constexpr int JAIL_WIDTH = 6;
+constexpr int JAIL_X = H_PROPERTY_WIDTH - JAIL_WIDTH - 2;
 
 constexpr char CHANCE_DISPLAY_V[] = "   Chance";
 constexpr char COMMUNITY_CHEST_DISPLAY_V[] = " Community    Chest";
