@@ -50,6 +50,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\curses\</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -67,6 +68,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\curses\</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -80,12 +82,15 @@
   <ItemGroup>
     <ClCompile Include="BoardItems.cpp" />
     <ClCompile Include="CmdLineMonopoly.cpp" />
-    <ClCompile Include="PlayerStats.cpp" />
+    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="colors.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BoardItems.h" />
     <ClInclude Include="CmdLineMonopoly.h" />
-    <ClInclude Include="PlayerStats.h" />
+    <ClInclude Include="Player.h" />
+    <ClInclude Include="colors.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

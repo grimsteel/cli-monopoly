@@ -85,7 +85,7 @@ void Property::drawInitial() {
       break;
   }
 
-  wprintw(win, displayName.c_str());
+  waddstr(win, displayName.c_str());
 
   wattroff(win, COLOR_PAIR(colorGroup));
 
@@ -99,9 +99,9 @@ void Property::drawInitial() {
     wmove(win, H_PROPERTY_HEIGHT - 1, 3);
   }
 
-  wprintw(win, "PRICE $");
+  waddstr(win, "PRICE $");
   wattron(win, A_UNDERLINE | A_BOLD);
-  wprintw(win, to_string(price).c_str());
+  waddstr(win, to_string(price).c_str());
   wattroff(win, A_UNDERLINE | A_BOLD);
 
   wnoutrefresh(win);
@@ -113,11 +113,11 @@ RandomDraw::RandomDraw(int index, RandomDrawType type, BoardItemLocation locatio
 /// Draw the entire card. This should only be called at the start
 void RandomDraw::drawInitial() {
   if (location <= Top) { // Top or Bottom
-    mvwprintw(win, V_PROPERTY_HEIGHT / 2 - 1, 0, type == Chance ? CHANCE_DISPLAY_V : COMMUNITY_CHEST_DISPLAY_V);
+    mvwaddstr(win, V_PROPERTY_HEIGHT / 2 - 1, 0, type == Chance ? CHANCE_DISPLAY_V : COMMUNITY_CHEST_DISPLAY_V);
     // bottom tee and top tee - instead of being corners, they are Ts - connected to other property cards
     wborder(win, 0, ' ', 0, 0, ACS_TTEE, ACS_HLINE, ACS_BTEE, ACS_HLINE);
   } else { // Left or Right
-    mvwprintw(win, H_PROPERTY_HEIGHT / 2, 0, type == Chance ? CHANCE_DISPLAY_H : COMMUNITY_CHEST_DISPLAY_H);
+    mvwaddstr(win, H_PROPERTY_HEIGHT / 2, 0, type == Chance ? CHANCE_DISPLAY_H : COMMUNITY_CHEST_DISPLAY_H);
     wborder(win, 0, 0, 0, ' ', ACS_LTEE, ACS_RTEE, ACS_VLINE, ACS_VLINE);
   }
 
@@ -131,20 +131,20 @@ TaxItem::TaxItem(int index, TaxType type, BoardItemLocation location) : BoardIte
 void TaxItem::drawInitial() {
   if (type == Income) {
     // this is on the bottom row
-    mvwprintw(win, V_PROPERTY_HEIGHT / 2 - 1, 0, INCOME_TAX_DISPLAY_V);
-    mvwprintw(win, V_PROPERTY_HEIGHT - 2, 2, "PAY $");
+    mvwaddstr(win, V_PROPERTY_HEIGHT / 2 - 1, 0, INCOME_TAX_DISPLAY_V);
+    mvwaddstr(win, V_PROPERTY_HEIGHT - 2, 2, "PAY $");
     wattron(win, A_UNDERLINE |  A_BOLD);
-    wprintw(win, "200");
+    waddstr(win, "200");
     wattroff(win, A_UNDERLINE | A_BOLD);
     // bottom tee and top tee - instead of being corners, they are Ts - connected to other property cards
     wborder(win, 0, ' ', 0, 0, ACS_TTEE, ACS_HLINE, ACS_BTEE, ACS_HLINE);
   } else {
     // luxury tax - this is on the right side
-    mvwprintw(win, H_PROPERTY_HEIGHT / 2, 0, LUXURY_TAX_DISPLAY_H);
+    mvwaddstr(win, H_PROPERTY_HEIGHT / 2, 0, LUXURY_TAX_DISPLAY_H);
     wborder(win, 0, 0, 0, ' ', ACS_LTEE, ACS_RTEE, ACS_VLINE, ACS_VLINE);
-    mvwprintw(win, H_PROPERTY_HEIGHT - 1, 4, "PAY $"); // this comes after because the border will overwrite it otherwise
+    mvwaddstr(win, H_PROPERTY_HEIGHT - 1, 4, "PAY $"); // this comes after because the border will overwrite it otherwise
     wattron(win, A_UNDERLINE | A_BOLD);
-    wprintw(win, "75");
+    waddstr(win, "75");
     wattroff(win, A_UNDERLINE | A_BOLD);
   }
 
@@ -156,9 +156,9 @@ void TaxItem::drawInitial() {
 Go::Go() : BoardItem(0, "Go", Bottom | Right) {}
 void Go::drawInitial() {
   mvwaddwstr(win, 1, 0, L"    ▄▄▄  ▄▄▄\n    █    █ █\n    █ █  █ █\n    ▀▀▀  ▀▀▀");
-  mvwprintw(win, V_PROPERTY_HEIGHT - 2, 2, "Collect $");
+  mvwaddstr(win, V_PROPERTY_HEIGHT - 2, 2, "Collect $");
   wattron(win, A_UNDERLINE | A_BOLD);
-  wprintw(win, "200");
+  waddstr(win, "200");
   wattroff(win, A_UNDERLINE | A_BOLD);
   wborder(win, 0, 0, 0, 0, ACS_PLUS, ACS_RTEE, ACS_BTEE, 0);
   //mvwaddch(win, 2, 2, ACS_BLOCK);
@@ -173,14 +173,14 @@ void Jail::drawInitial() {
   mvwaddch(win, JAIL_HEIGHT + 1, JAIL_X, ACS_LLCORNER);
   whline(win, 0, JAIL_WIDTH);
   mvwaddch(win, JAIL_HEIGHT + 1, H_PROPERTY_WIDTH - 1, ACS_RTEE);
-  mvwprintw(win, V_PROPERTY_HEIGHT - 2, 2, "Just Visiting");
-  mvwprintw(win, 2, JAIL_X + 2, "Jail");
+  mvwaddstr(win, V_PROPERTY_HEIGHT - 2, 2, "Just Visiting");
+  mvwaddstr(win, 2, JAIL_X + 2, "Jail");
   wnoutrefresh(win);
 }
 FreeParking::FreeParking() : BoardItem(0, "Free Parking", Top | Left) {}
 void FreeParking::drawInitial() {
   wborder(win, 0, 0, 0, 0, 0, ACS_TTEE, ACS_LTEE, 0);
-  mvwprintw(win, V_PROPERTY_HEIGHT / 2 - 1, 2, "Free Parking");
+  mvwaddstr(win, V_PROPERTY_HEIGHT / 2 - 1, 2, "Free Parking");
   wnoutrefresh(win);
 }
 void FreeParking::fixBorder() {
@@ -190,7 +190,7 @@ void FreeParking::fixBorder() {
 GoToJail::GoToJail() : BoardItem(0, "Go to Jail", Top | Right) {}
 void GoToJail::drawInitial() {
   wborder(win, 0, 0, 0, 0, ACS_TTEE, 0, 0, ACS_RTEE);
-  mvwprintw(win, V_PROPERTY_HEIGHT / 2 - 1, 3, "Go to Jail");
+  mvwaddstr(win, V_PROPERTY_HEIGHT / 2 - 1, 3, "Go to Jail");
   wnoutrefresh(win);
 }
 void GoToJail::fixBorder() {

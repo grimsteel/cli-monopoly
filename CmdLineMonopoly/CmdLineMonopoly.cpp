@@ -10,9 +10,13 @@
 #include <curses.h>
 #include "CmdLineMonopoly.h"
 #include "BoardItems.h"
-#include "PlayerStats.h"
+#include "Player.h"
+#include "colors.h"
+#include <locale.h>
 
 using namespace std;
+
+void init_colors();
 
 int main()
 {
@@ -20,6 +24,7 @@ int main()
   curs_set(FALSE);
   noecho();
   init_colors();
+  keypad(stdscr, TRUE);
   
   // The first strings strings here are what show up in prompts ("Would you like to buy Baltic Avenue?")
   // The second strings here are what show up on the rendered game board. Because of spacing issues, some of them use abbreviations.
@@ -72,7 +77,13 @@ int main()
   Jail jail;
   FreeParking freeParking;
   GoToJail goToJail;
-  PlayerStats player1;
+
+  Player players[] = {
+    Player(1),
+    Player(2),
+    Player(3),
+    Player(4)
+  };
 
   wnoutrefresh(stdscr);
 
@@ -129,9 +140,9 @@ int main()
 
   doupdate();
 
-  keypad(stdscr, TRUE);
-
-  player1.getAttributes();
+  for (int i = 0; i < sizeof(players) / sizeof(Player); i++) {
+    if (!players[i].queryAttributes()) break;
+  }
 
   while (true) {
     refresh();
@@ -153,18 +164,4 @@ int main()
 
   endwin();
   return 0;
-}
-
-/// @brief Initialize all the colors for use with Curses
-void init_colors() {
-  start_color();
-  init_pair(BGT_PURPLE, COLOR_WHITE, COLOR_MAGENTA | 0b1000); // black on light magenta (somehow this looks purple)
-  init_pair(BGT_LBLUE, COLOR_BLACK, COLOR_CYAN | 0b1000); // black on light cyan
-  init_pair(BGT_PINK, COLOR_WHITE, COLOR_MAGENTA);
-  init_pair(BGT_ORANGE, COLOR_BLACK, COLOR_RED | 0b1000); // black on light red (orange?)
-  init_pair(BGT_RED, COLOR_WHITE, COLOR_RED);
-  init_pair(BGT_YELLOW, COLOR_BLACK, COLOR_YELLOW);
-  init_pair(BGT_GREEN, COLOR_BLACK, COLOR_GREEN);
-  init_pair(BGT_BLUE, COLOR_WHITE, COLOR_BLUE);
-  init_pair(BGT_BLACK, COLOR_WHITE, COLOR_BLACK);
 }
