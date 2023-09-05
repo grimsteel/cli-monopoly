@@ -119,6 +119,18 @@ bool Player::queryAttributes() {
     wclrtoeol(win);
   }
 
+  wclear(win);
+  mvwadd_wch(win, 0, 0, &selectedColorChar);
+
+  wattron(win, A_BOLD | A_UNDERLINE);
+  mvwaddstr(win, 0, 2, playerName);
+  wattroff(win, A_BOLD | A_UNDERLINE);
+
+  mvwaddstr(win, 1, 0, "0 Properties");
+  wattron(win, COLOR_PAIR(TXT_GREEN));
+  mvwaddstr(win, 2, 0, "$0");
+  wattroff(win, COLOR_PAIR(TXT_GREEN));
+
   wrefresh(win);
 
   name = playerName;
