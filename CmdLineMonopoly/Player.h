@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
 #define PDC_WIDE
+#include <string>
 #include <curses.h>
 #include "BoardItems.h"
 #include "colors.h"
@@ -19,10 +19,10 @@ public:
   Player(unsigned char id);
   ~Player();
   bool queryAttributes();
+  unsigned char color;
 private:
   string name;
   unsigned char id;
-  unsigned char color;
   WINDOW* win;
   unsigned char static usedColors;
 };

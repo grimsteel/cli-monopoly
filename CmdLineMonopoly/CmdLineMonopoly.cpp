@@ -144,6 +144,11 @@ int main()
     if (!players[i].queryAttributes()) break;
   }
 
+  go.handlePlayer(&players[0]);
+  go.redrawPlayers();
+
+  doupdate();
+
   while (true) {
     refresh();
     int ch = getch();

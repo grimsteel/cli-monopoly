@@ -53,6 +53,9 @@ void BoardItem::initWindow() {
     );
   }
 }
+void BoardItem::handlePlayer(Player* player) {
+  players.push_back(player);
+}
 #pragma endregion
 
 #pragma region Property class definition
@@ -165,6 +168,19 @@ void Go::drawInitial() {
   //mvwaddwstr(win, V_PROPERTY_HEIGHT / 2 - 1, H_PROPERTY_WIDTH / 2 - 1, L"Go");
   wnoutrefresh(win);
 }
+void Go::redrawPlayers() {
+  wmove(win, 5, 1);
+  wclrtoeol(win);
+  // TODO: optimize this. deque isn't really efficient. wins_wch will push chars
+  //wmove(win, 5, 1);
+  for (auto i = players.begin(); i < players.end(); i++) {
+    cchar_t playerChar;
+    setcchar(&playerChar, L"\uf4ff", 0, (*i)->color, NULL);
+    wadd_wch(win, &playerChar);
+  }
+  wnoutrefresh(win);
+}
+
 Jail::Jail() : BoardItem(0, "Jail", Bottom | Left) {}
 void Jail::drawInitial() {
   wborder(win, 0, 0, 0, 0, ACS_LTEE, ACS_PLUS, 0, ACS_BTEE);
