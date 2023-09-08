@@ -53,9 +53,6 @@ void BoardItem::initWindow() {
     );
   }
 }
-void BoardItem::handlePlayer(Player* player) {
-  players.push_back(player);
-}
 #pragma endregion
 
 #pragma region Property class definition
@@ -168,16 +165,17 @@ void Go::drawInitial() {
   //mvwaddwstr(win, V_PROPERTY_HEIGHT / 2 - 1, H_PROPERTY_WIDTH / 2 - 1, L"Go");
   wnoutrefresh(win);
 }
-void Go::redrawPlayers() {
-  wmove(win, 5, 1);
-  wclrtoeol(win);
+void Go::handlePlayer(Player* player) {
+  numPlayers++;
+  wmove(win, 5, numPlayers + 1);
+  wdelch(win);
+  wmove(win, 5, numPlayers);
+  
   // TODO: optimize this. deque isn't really efficient. wins_wch will push chars
-  //wmove(win, 5, 1);
-  for (auto i = players.begin(); i < players.end(); i++) {
-    cchar_t playerChar;
-    setcchar(&playerChar, L"\uf4ff", 0, (*i)->color, NULL);
-    wadd_wch(win, &playerChar);
-  }
+  cchar_t playerChar;
+  setcchar(&playerChar, L"\uf4ff", 0, player->color, NULL);
+  wins_wch(win, &playerChar);
+  
   wnoutrefresh(win);
 }
 

@@ -145,7 +145,6 @@ int main()
   }
 
   go.handlePlayer(&players[0]);
-  go.redrawPlayers();
 
   doupdate();
 

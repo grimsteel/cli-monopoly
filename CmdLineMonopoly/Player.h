@@ -3,8 +3,6 @@
 #define PDC_WIDE
 #include <string>
 #include <curses.h>
-#include "BoardItems.h"
-#include "colors.h"
 
 using namespace std;
 

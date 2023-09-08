@@ -5,7 +5,6 @@
 #include "Player.h"
 #include <string>
 #include <curses.h>
-#include <deque>
 
 #define V_WIN(y, x) newwin(V_PROPERTY_HEIGHT, V_PROPERTY_WIDTH, y, x);
 #define H_WIN(y, x) newwin(H_PROPERTY_HEIGHT, H_PROPERTY_WIDTH, y, x);
@@ -57,14 +56,13 @@ public:
   /// @brief Draw this entire item
   /// Pure virtual
   virtual void drawInitial() = 0;
-  void handlePlayer(Player* player);
-  virtual void redrawPlayers() {};
+  virtual void handlePlayer(Player* player) {};
   void redraw();
 protected:
   WINDOW* win = nullptr;
   BoardItemLocation location;
   int index;
-  deque<Player*> players;
+  unsigned char numPlayers = 0;
 };
 
 /// A single Property card on the map
@@ -113,7 +111,7 @@ class Go : public BoardItem {
 public:
   Go();
   void drawInitial() override;
-  void redrawPlayers() override;
+  void handlePlayer(Player* player) override;
 };
 
 class Jail : public BoardItem {
