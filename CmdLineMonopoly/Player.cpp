@@ -22,10 +22,18 @@ Player::Player(unsigned char id) : id(id) {
   int y = (id <= 2) ? V_PROPERTY_HEIGHT : V_PROPERTY_HEIGHT + PROPERTIES_PER_SIDE * H_PROPERTY_HEIGHT - PLAYER_HEIGHT - 1;
   win = newwin(PLAYER_HEIGHT, PLAYER_WIDTH, y, x);
   keypad(win, TRUE);
+
+  refresh();
+  wrefresh(win);
+}
+
+Player::Player(Player&& p) : id(p.id), win(p.win) {
+  p.win = nullptr;
 }
 
 Player::~Player() {
-  delwin(win);
+  if (win != nullptr)
+    delwin(win);
 }
 
 /// @returns Whether another player should be added

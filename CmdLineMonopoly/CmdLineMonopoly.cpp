@@ -78,12 +78,8 @@ int main()
   FreeParking freeParking;
   GoToJail goToJail;
 
-  Player players[] = {
-    Player(1),
-    Player(2),
-    Player(3),
-    Player(4)
-  };
+  vector<Player> players;
+  players.reserve(MAX_PLAYERS);
 
   wnoutrefresh(stdscr);
 
@@ -140,11 +136,14 @@ int main()
 
   doupdate();
 
-  for (int i = 0; i < sizeof(players) / sizeof(Player); i++) {
-    if (!players[i].queryAttributes()) break;
+  for (int i = 0; i < MAX_PLAYERS; i++) {
+    players.push_back(Player(static_cast<unsigned char>(players.size()) + 1));
+    if (!(players.end() - 1)->queryAttributes()) break;
   }
 
-  go.handlePlayer(&players[0]);
+  for (auto& player : players) {
+    go.handlePlayer(&player);
+  }
 
   doupdate();
 

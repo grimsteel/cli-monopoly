@@ -15,6 +15,7 @@ class Player
 {
 public:
   Player(unsigned char id);
+  Player(Player&& p);
   ~Player();
   bool queryAttributes();
   unsigned char color;

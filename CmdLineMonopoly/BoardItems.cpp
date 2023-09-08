@@ -7,7 +7,9 @@ BoardItem::BoardItem(int index, string name, BoardItemLocation location) : index
   initWindow();
 }
 BoardItem::~BoardItem() {
-  delwin(win);
+  if (win != nullptr) {
+    delwin(win);
+  }
 }
 void BoardItem::redraw() {
   if (win != nullptr) {
