@@ -19,6 +19,7 @@ public:
   ~Player();
   bool queryAttributes();
   unsigned char color;
+  unsigned char boardItemIndex; // the index _inside_ the current board item which the player is on (useful when more than 1 player is on an item)
 private:
   string name;
   unsigned char id;

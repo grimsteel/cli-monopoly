@@ -3,7 +3,7 @@
 #include <curses.h>
 
 #pragma region BoardItem class definition
-BoardItem::BoardItem(int index, string name, BoardItemLocation location) : index(index), name(name), location(location) {
+BoardItem::BoardItem(unsigned char index, string name, BoardItemLocation location) : index(index), name(name), location(location) {
   initWindow();
 }
 BoardItem::~BoardItem() {
@@ -58,7 +58,7 @@ void BoardItem::initWindow() {
 #pragma endregion
 
 #pragma region Property class definition
-Property::Property(int index, string name, string displayName, short price, unsigned char colorGroup, BoardItemLocation location)
+Property::Property(unsigned char index, string name, string displayName, short price, unsigned char colorGroup, BoardItemLocation location)
   : BoardItem(index, name, location), displayName(displayName), price(price), colorGroup(colorGroup) {}
 
 /// Draw the entire card. This should only be called at the start
@@ -111,7 +111,7 @@ void Property::drawInitial() {
 #pragma endregion
 
 #pragma region RandomDraw class definition
-RandomDraw::RandomDraw(int index, RandomDrawType type, BoardItemLocation location) : BoardItem(index, type == Chance ? "Chance" : "Community Chest", location), type(type) {}
+RandomDraw::RandomDraw(unsigned char index, RandomDrawType type, BoardItemLocation location) : BoardItem(index, type == Chance ? "Chance" : "Community Chest", location), type(type) {}
 /// Draw the entire card. This should only be called at the start
 void RandomDraw::drawInitial() {
   if (location <= Top) { // Top or Bottom
@@ -128,7 +128,7 @@ void RandomDraw::drawInitial() {
 #pragma endregion
 
 #pragma region TaxItem class definition
-TaxItem::TaxItem(int index, TaxType type, BoardItemLocation location) : BoardItem(index, type == Income ? "Income Tax" : "Luxury Tax", location), type(type) {}
+TaxItem::TaxItem(unsigned char index, TaxType type, BoardItemLocation location) : BoardItem(index, type == Income ? "Income Tax" : "Luxury Tax", location), type(type) {}
 /// Draw the entire card. This should only be called at the start
 void TaxItem::drawInitial() {
   if (type == Income) {
@@ -168,16 +168,21 @@ void Go::drawInitial() {
   wnoutrefresh(win);
 }
 void Go::handlePlayer(Player* player) {
-  numPlayers++;
+  player->boardItemIndex = numPlayers++;
   wmove(win, 5, numPlayers + 1);
   wdelch(win);
   wmove(win, 5, numPlayers);
   
-  // TODO: optimize this. deque isn't really efficient. wins_wch will push chars
   cchar_t playerChar;
   setcchar(&playerChar, L"\uf4ff", 0, player->color, NULL);
   wins_wch(win, &playerChar);
   
+  wnoutrefresh(win);
+}
+void Go::handlePlayerLeave(unsigned char index) {
+  mvwdelch(win, 5, index + 1);
+  mvwinsch(win, 5, numPlayers--, ' ');
+
   wnoutrefresh(win);
 }
 

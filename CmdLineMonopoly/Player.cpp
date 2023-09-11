@@ -105,26 +105,10 @@ bool Player::queryAttributes() {
   mvwadd_wch(win, 2, COLOR_SELECTION_START, &selectedColorChar);
   wclrtoeol(win);
 
-  unsigned char addAnother = 0;
+  bool addAnother = false;
 
   if (id < MAX_PLAYERS) {
-    addAnother = 1;
-    mvwaddstr(win, 3, 0, "Add another?");
-    while (true) {
-      wattron(win, COLOR_PAIR(BGT_BLACK + addAnother)); // If addAnother is 1, then this makes it white on black
-      mvwaddstr(win, 3, 13, "Yes");
-      wattroff(win, COLOR_PAIR(BGT_BLACK + addAnother));
-      wattron(win, COLOR_PAIR(BGT_WHITE - addAnother)); // If addAnother is 1, this makes it black on white
-      mvwaddstr(win, 3, 17, "No");
-      wattroff(win, COLOR_PAIR(BGT_WHITE - addAnother));
-      wrefresh(win);
-      
-      int ch = wgetch(win);
-      if (ch == KEY_ENTER || ch == '\n') break;
-      else if (ch == KEY_LEFT || ch == KEY_RIGHT) addAnother = !addAnother;
-    }
-    wmove(win, 3, 0);
-    wclrtoeol(win);
+    addAnother = showYesNoPrompt(win, "Add another?", 0, 3);
   }
 
   wclear(win);
@@ -144,7 +128,7 @@ bool Player::queryAttributes() {
   name = playerName;
   color = TXT_PURPLE + currentIndex;
 
-  return addAnother == 1;
+  return addAnother;
 }
 
 unsigned char Player::usedColors = 0b00000000;

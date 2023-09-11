@@ -84,6 +84,8 @@
     <ClCompile Include="CmdLineMonopoly.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="colors.cpp" />
+    <ClCompile Include="utils.cpp" />
+    <ClCompile Include="MainMenu.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BoardItems.h" />
@@ -91,6 +93,7 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="colors.h" />
     <ClInclude Include="utils.h" />
+    <ClInclude Include="MainMenu.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

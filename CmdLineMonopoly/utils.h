@@ -1,5 +1,8 @@
 #pragma once
 
+#include <curses.h>
+#include <string>
+
 #ifdef _MSC_VER
 #include <intrin.h>
 
@@ -43,3 +46,6 @@ inline unsigned long clz(unsigned long value) {
 #endif
 
 #define SET_CCHAR_COLOR(cchar, color) cchar = cchar & ~A_COLOR | (color) << 24;
+
+
+bool showYesNoPrompt(WINDOW* win, std::string prompt, int x, int y);

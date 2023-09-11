@@ -49,7 +49,7 @@ public:
   inline friend BoardItemLocation operator |(BoardItemLocation a, BoardItemLocation b) {
     return static_cast<BoardItemLocation>(static_cast<int>(a) | static_cast<int>(b));
   }
-  BoardItem(int index, string name, BoardItemLocation location);
+  BoardItem(unsigned char index, string name, BoardItemLocation location);
   ~BoardItem();
   void initWindow();
   string name;
@@ -57,18 +57,20 @@ public:
   /// Pure virtual
   virtual void drawInitial() = 0;
   virtual void handlePlayer(Player* player) {};
+  virtual void handlePlayerLeave(unsigned char index) {};
   void redraw();
 protected:
   WINDOW* win = nullptr;
   BoardItemLocation location;
-  int index;
+  unsigned char index;
   unsigned char numPlayers = 0;
+  unsigned char playerListY;
 };
 
 /// A single Property card on the map
 class Property : public BoardItem {
 public:
-  Property(int index, string name, string displayName, short price, unsigned char colorGroup, BoardItemLocation location);
+  Property(unsigned char index, string name, string displayName, short price, unsigned char colorGroup, BoardItemLocation location);
   string displayName;
   short price;
   short mortgagePrice;
@@ -87,7 +89,7 @@ public:
         Chance,
         CommunityChest
     };
-    RandomDraw(int index, RandomDrawType type, BoardItemLocation location);
+    RandomDraw(unsigned char index, RandomDrawType type, BoardItemLocation location);
     void drawInitial() override;
 private:
     RandomDrawType type;
@@ -100,7 +102,7 @@ public:
         Income,
         Luxury
     };
-    TaxItem(int index, TaxType type, BoardItemLocation location);
+    TaxItem(unsigned char index, TaxType type, BoardItemLocation location);
     void drawInitial() override;
 private:
     TaxType type;
@@ -112,6 +114,7 @@ public:
   Go();
   void drawInitial() override;
   void handlePlayer(Player* player) override;
+  void handlePlayerLeave(unsigned char index) override;
 };
 
 class Jail : public BoardItem {
