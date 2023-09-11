@@ -10,6 +10,7 @@ public:
     ~MainMenu();
     void setPlayerName(string name);
     void setLocation(string location);
+    bool setYesNoPrompt(string prompt);
 private:
     WINDOW* win;
 };

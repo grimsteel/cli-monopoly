@@ -27,7 +27,7 @@ Player::Player(unsigned char id) : id(id) {
   wrefresh(win);
 }
 
-Player::Player(Player&& p) : id(p.id), win(p.win) {
+Player::Player(Player&& p) noexcept : id(p.id), win(p.win) {
   p.win = nullptr;
 }
 

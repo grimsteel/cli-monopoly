@@ -15,11 +15,12 @@ class Player
 {
 public:
   Player(unsigned char id);
-  Player(Player&& p);
+  Player(Player&& p) noexcept;
   ~Player();
   bool queryAttributes();
-  unsigned char color;
-  unsigned char boardItemIndex; // the index _inside_ the current board item which the player is on (useful when more than 1 player is on an item)
+  unsigned char color = 0;
+  unsigned char boardItemIndex = 0; // the index _inside_ the current board item which the player is on (useful when more than 1 player is on an item)
+  unsigned int balance = 0;
 private:
   string name;
   unsigned char id;

@@ -77,6 +77,7 @@ int main()
   Jail jail;
   FreeParking freeParking;
   GoToJail goToJail;
+  MainMenu mainMenu;
 
   vector<Player> players;
   players.reserve(MAX_PLAYERS);
@@ -142,7 +143,7 @@ int main()
   }
 
   for (auto& player : players) {
-    go.handlePlayer(&player);
+    go.handlePlayer(&player, &mainMenu);
   }
 
   doupdate();

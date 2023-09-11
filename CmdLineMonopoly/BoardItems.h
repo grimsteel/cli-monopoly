@@ -3,6 +3,7 @@
 #define PDC_WIDE
 
 #include "Player.h"
+#include "MainMenu.h"
 #include <string>
 #include <curses.h>
 
@@ -56,14 +57,15 @@ public:
   /// @brief Draw this entire item
   /// Pure virtual
   virtual void drawInitial() = 0;
-  virtual void handlePlayer(Player* player) {};
-  virtual void handlePlayerLeave(unsigned char index) {};
+  virtual void handlePlayer(Player* player, MainMenu* mainMenu);
+  void handlePlayerLeave(unsigned char index);
   void redraw();
 protected:
   WINDOW* win = nullptr;
   BoardItemLocation location;
   unsigned char index;
   unsigned char numPlayers = 0;
+  /// @brief Y index of the list of players
   unsigned char playerListY;
 };
 
@@ -78,6 +80,7 @@ public:
   unsigned char ownedBy = 255; // 0-254 are player IDs, 255 is -1
   unsigned char numHouses = 0; // 5 houses equals 1 hotel
   void drawInitial() override;
+  void handlePlayer(Player* player, MainMenu* mainMenu) override;
 private:
   unsigned char colorGroup;
 };
@@ -113,8 +116,6 @@ class Go : public BoardItem {
 public:
   Go();
   void drawInitial() override;
-  void handlePlayer(Player* player) override;
-  void handlePlayerLeave(unsigned char index) override;
 };
 
 class Jail : public BoardItem {

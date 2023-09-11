@@ -1,4 +1,5 @@
 ﻿#include "BoardItems.h"
+#include "MainMenu.h"
 #define PDC_WIDE
 #include <curses.h>
 
@@ -21,6 +22,7 @@ void BoardItem::redraw() {
 void BoardItem::initWindow() {
   // The four sides
   if (location & Bottom) {
+    playerListY = 5;
     if (location & Left) {
       win = C_WIN(BOTTOM_OFFSET, 0);
     } else if (location & Right) {
@@ -33,6 +35,7 @@ void BoardItem::initWindow() {
       );
     }
   } else if (location & Top) {
+    playerListY = 2;
     if (location & Left) {
       win = C_WIN(0, 0);
     } else if (location & Right) {
@@ -44,16 +47,36 @@ void BoardItem::initWindow() {
       );
     }
   } else if (location & Left) {
+    playerListY = 3;
     win = H_WIN(
       V_PROPERTY_HEIGHT + (PROPERTIES_PER_SIDE - index - 1) * H_PROPERTY_HEIGHT - 1, // index 0 is at the bottom at st. charles
       0
     );
   } else if (location & Right) {
+    playerListY = 3;
     win = H_WIN(
       V_PROPERTY_HEIGHT + index * H_PROPERTY_HEIGHT - 1,
       RIGHT_OFFSET
     );
   }
+}
+void BoardItem::handlePlayer(Player* player, MainMenu* mainMenu) {
+  player->boardItemIndex = numPlayers++;
+  wmove(win, playerListY, numPlayers + 1);
+  wdelch(win);
+  wmove(win, playerListY, numPlayers);
+
+  cchar_t playerChar;
+  setcchar(&playerChar, L"\uf4ff", 0, player->color, NULL);
+  wins_wch(win, &playerChar);
+
+  wnoutrefresh(win);
+}
+void BoardItem::handlePlayerLeave(unsigned char index) {
+  mvwdelch(win, playerListY, index + 1);
+  mvwinsch(win, playerListY, numPlayers--, ' ');
+
+  wnoutrefresh(win);
 }
 #pragma endregion
 
@@ -107,6 +130,13 @@ void Property::drawInitial() {
   wattroff(win, A_UNDERLINE | A_BOLD);
 
   wnoutrefresh(win);
+}
+void Property::handlePlayer(Player* player, MainMenu* mainMenu) {
+  BoardItem::handlePlayer(player, mainMenu);
+  bool shouldBuy = player->balance >= price && mainMenu->setYesNoPrompt("Would you like to buy this property?");
+  if (shouldBuy) {
+    // transfer
+  }
 }
 #pragma endregion
 
@@ -165,24 +195,6 @@ void Go::drawInitial() {
   wborder(win, 0, 0, 0, 0, ACS_PLUS, ACS_RTEE, ACS_BTEE, 0);
   //mvwaddch(win, 2, 2, ACS_BLOCK);
   //mvwaddwstr(win, V_PROPERTY_HEIGHT / 2 - 1, H_PROPERTY_WIDTH / 2 - 1, L"Go");
-  wnoutrefresh(win);
-}
-void Go::handlePlayer(Player* player) {
-  player->boardItemIndex = numPlayers++;
-  wmove(win, 5, numPlayers + 1);
-  wdelch(win);
-  wmove(win, 5, numPlayers);
-  
-  cchar_t playerChar;
-  setcchar(&playerChar, L"\uf4ff", 0, player->color, NULL);
-  wins_wch(win, &playerChar);
-  
-  wnoutrefresh(win);
-}
-void Go::handlePlayerLeave(unsigned char index) {
-  mvwdelch(win, 5, index + 1);
-  mvwinsch(win, 5, numPlayers--, ' ');
-
   wnoutrefresh(win);
 }
 
