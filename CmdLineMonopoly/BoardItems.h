@@ -3,7 +3,6 @@
 #define PDC_WIDE
 
 #include "Player.h"
-#include "BoardState.h"
 #include <string>
 #include <curses.h>
 
@@ -21,6 +20,9 @@ constexpr int H_PROPERTY_WIDTH = 16;
 constexpr int H_PROPERTY_HEIGHT = 5;
 
 constexpr int PROPERTIES_PER_SIDE = 9;
+
+// Forward declaration
+class BoardState;
 
 // We need to do -1 because the top border of the top left/right properties
 // are on the same row as the bottom border of the top properties

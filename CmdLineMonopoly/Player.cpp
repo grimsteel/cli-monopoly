@@ -2,6 +2,7 @@
 #include <curses.h>
 #include "Player.h"
 #include "BoardItems.h"
+#include "BoardState.h"
 #include "colors.h"
 #include "utils.h"
 #include <bit>
@@ -37,7 +38,7 @@ Player::~Player() {
 }
 
 /// @returns Whether another player should be added
-bool Player::queryAttributes() {
+bool Player::queryAttributes(BoardState* boardState) {
   wattron(win, A_BOLD | A_UNDERLINE);
   wprintw(win, "Player %d:", id);
   wattroff(win, A_BOLD | A_UNDERLINE);
@@ -78,6 +79,8 @@ bool Player::queryAttributes() {
     wrefresh(win);
     
     int ch = wgetch(win);
+
+    boardState->handleCharInput(ch);
     
     if (ch == KEY_ENTER || ch == '\n') break;
     else if (ch == KEY_LEFT || ch == KEY_RIGHT) {
@@ -108,7 +111,7 @@ bool Player::queryAttributes() {
   bool addAnother = false;
 
   if (id < MAX_PLAYERS) {
-    addAnother = showYesNoPrompt(win, "Add another?", 0, 3);
+    addAnother = showYesNoPrompt(win, boardState, "Add another?", 0, 3);
   }
 
   wclear(win);

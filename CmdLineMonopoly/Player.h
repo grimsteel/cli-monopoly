@@ -4,6 +4,9 @@
 #include <string>
 #include <curses.h>
 
+// Forward declaration
+class BoardState;
+
 using namespace std;
 
 constexpr int COLOR_SELECTION_START = 7;
@@ -17,7 +20,7 @@ public:
   Player(unsigned char id);
   Player(Player&& p) noexcept;
   ~Player();
-  bool queryAttributes();
+  bool queryAttributes(BoardState* boardState);
   unsigned char color = 0;
   unsigned char boardItemIndex = 0; // the index _inside_ the current board item which the player is on (useful when more than 1 player is on an item)
   unsigned int balance = 0;

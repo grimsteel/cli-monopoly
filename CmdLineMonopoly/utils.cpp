@@ -1,9 +1,10 @@
 #include "utils.h"
 #include "colors.h"
+#include "BoardState.h"
 #include <curses.h>
 #include <string>
 
-bool showYesNoPrompt(WINDOW* win, std::string prompt, int x, int y) {
+bool showYesNoPrompt(WINDOW* win, BoardState* boardState, std::string prompt, int x, int y) {
   unsigned char result = 1;
   mvwaddstr(win, y, x, prompt.c_str());
   while (true) {
@@ -16,6 +17,7 @@ bool showYesNoPrompt(WINDOW* win, std::string prompt, int x, int y) {
     wrefresh(win);
     
     int ch = wgetch(win);
+    boardState->handleCharInput(ch);
     if (ch == KEY_ENTER || ch == '\n') break;
     else if (ch == KEY_LEFT || ch == KEY_RIGHT) result = !result;
   }
