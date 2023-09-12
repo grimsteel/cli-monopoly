@@ -10,6 +10,7 @@
 #include <curses.h>
 #include "CmdLineMonopoly.h"
 #include "BoardItems.h"
+#include "BoardState.h"
 #include "Player.h"
 #include "colors.h"
 #include <locale.h>
@@ -77,7 +78,7 @@ int main()
   Jail jail;
   FreeParking freeParking;
   GoToJail goToJail;
-  MainMenu mainMenu;
+  BoardState boardState;
 
   vector<Player> players;
   players.reserve(MAX_PLAYERS);
@@ -143,7 +144,7 @@ int main()
   }
 
   for (auto& player : players) {
-    go.handlePlayer(&player, &mainMenu);
+    go.handlePlayer(&player, &boardState);
   }
 
   doupdate();

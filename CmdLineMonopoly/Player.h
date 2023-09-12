@@ -21,8 +21,8 @@ public:
   unsigned char color = 0;
   unsigned char boardItemIndex = 0; // the index _inside_ the current board item which the player is on (useful when more than 1 player is on an item)
   unsigned int balance = 0;
-private:
   string name;
+private:
   unsigned char id;
   WINDOW* win;
   unsigned char static usedColors;

@@ -1,5 +1,5 @@
 ﻿#include "BoardItems.h"
-#include "MainMenu.h"
+#include "BoardState.h"
 #define PDC_WIDE
 #include <curses.h>
 
@@ -60,7 +60,7 @@ void BoardItem::initWindow() {
     );
   }
 }
-void BoardItem::handlePlayer(Player* player, MainMenu* mainMenu) {
+void BoardItem::handlePlayer(Player* player, BoardState* boardState) {
   player->boardItemIndex = numPlayers++;
   wmove(win, playerListY, numPlayers + 1);
   wdelch(win);
@@ -81,7 +81,7 @@ void BoardItem::handlePlayerLeave(unsigned char index) {
 #pragma endregion
 
 #pragma region Property class definition
-Property::Property(unsigned char index, string name, string displayName, short price, unsigned char colorGroup, BoardItemLocation location)
+Property::Property(unsigned char index, string name, string displayName, unsigned short price, unsigned char colorGroup, BoardItemLocation location)
   : BoardItem(index, name, location), displayName(displayName), price(price), colorGroup(colorGroup) {}
 
 /// Draw the entire card. This should only be called at the start
@@ -131,9 +131,9 @@ void Property::drawInitial() {
 
   wnoutrefresh(win);
 }
-void Property::handlePlayer(Player* player, MainMenu* mainMenu) {
-  BoardItem::handlePlayer(player, mainMenu);
-  bool shouldBuy = player->balance >= price && mainMenu->setYesNoPrompt("Would you like to buy this property?");
+void Property::handlePlayer(Player* player, BoardState* boardState) {
+  BoardItem::handlePlayer(player, boardState);
+  bool shouldBuy = player->balance >= price && boardState->setYesNoPrompt("Would you like to buy this property?");
   if (shouldBuy) {
     // transfer
   }

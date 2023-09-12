@@ -3,7 +3,7 @@
 #define PDC_WIDE
 
 #include "Player.h"
-#include "MainMenu.h"
+#include "BoardState.h"
 #include <string>
 #include <curses.h>
 
@@ -57,7 +57,7 @@ public:
   /// @brief Draw this entire item
   /// Pure virtual
   virtual void drawInitial() = 0;
-  virtual void handlePlayer(Player* player, MainMenu* mainMenu);
+  virtual void handlePlayer(Player* player, BoardState* mainMenu);
   void handlePlayerLeave(unsigned char index);
   void redraw();
 protected:
@@ -72,15 +72,15 @@ protected:
 /// A single Property card on the map
 class Property : public BoardItem {
 public:
-  Property(unsigned char index, string name, string displayName, short price, unsigned char colorGroup, BoardItemLocation location);
+  Property(unsigned char index, string name, string displayName, unsigned short price, unsigned char colorGroup, BoardItemLocation location);
   string displayName;
-  short price;
-  short mortgagePrice;
-  short housePrice;
+  unsigned short price;
+  unsigned short mortgagePrice;
+  unsigned short housePrice;
   unsigned char ownedBy = 255; // 0-254 are player IDs, 255 is -1
   unsigned char numHouses = 0; // 5 houses equals 1 hotel
   void drawInitial() override;
-  void handlePlayer(Player* player, MainMenu* mainMenu) override;
+  void handlePlayer(Player* player, BoardState* mainMenu) override;
 private:
   unsigned char colorGroup;
 };
