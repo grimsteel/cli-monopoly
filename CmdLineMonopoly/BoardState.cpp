@@ -99,7 +99,7 @@ BoardState::BoardState() : mt(rd()), dice(1, 6),
     &properties[27]
   }
 {
-  win = newwin(10, 30, 5, H_PROPERTY_WIDTH * 2 + V_PROPERTY_WIDTH + PROPERTIES_PER_SIDE + 10);
+  win = newwin(10, 30, 1, H_PROPERTY_WIDTH * 2 + V_PROPERTY_WIDTH * PROPERTIES_PER_SIDE + 2);
   players.reserve(MAX_PLAYERS);
   wnoutrefresh(stdscr);
 }
@@ -123,6 +123,8 @@ void BoardState::getPlayers() {
     if (!shouldContinue) break;
   }
   doupdate();
+
+  drawMenu(&players[0], go.name);
 }
 void BoardState::handleCharInput(int ch) {
   if (ch == KEY_RESIZE) {
@@ -136,13 +138,14 @@ void BoardState::handleCharInput(int ch) {
     doupdate();
   }
 }
-void BoardState::setPlayerName(string name) {
+
+void BoardState::drawMenu(Player* player, string location) {
   wattron(win, A_BOLD | A_UNDERLINE);
-  mvwprintw(win, 0, 0, "%s, it's your turn.", name.c_str());
+  mvwprintw(win, 0, 0, "%s, it's your turn.", player->name.c_str());
   wattroff(win, A_BOLD | A_UNDERLINE);
-}
-void BoardState::setLocation(string name) {
-  mvwprintw(win, 1, 0, "You are on %s.", name.c_str());
+  mvwprintw(win, 1, 0, "You are on %s.", location.c_str());
+
+  wrefresh(win);
 }
 bool BoardState::setYesNoPrompt(string prompt) {
   return showYesNoPrompt(win, this, prompt, 0, 2);
