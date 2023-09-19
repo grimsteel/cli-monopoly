@@ -22,7 +22,7 @@ public:
   ~Player();
   bool queryAttributes(BoardState* boardState);
   unsigned char color = 0;
-  unsigned char boardItemIndex = 0; // the index _inside_ the current board item which the player is on (useful when more than 1 player is on an item)
+  unsigned char boardItemIndex = 0;
   unsigned int balance = 0;
   string name;
 private:

@@ -19,13 +19,15 @@ public:
   void handleCharInput(int ch);
   bool setYesNoPrompt(string prompt);
   unsigned char rollDice();
-  void drawMenu(Player* player, string location);
-  vector<Player> players;
+  
 private:
   WINDOW* win;
   random_device rd;
   mt19937 mt;
   uniform_int_distribution<unsigned short> dice;
+  void drawMenu(Player* player, string location);
+  vector<Player> players;
+
   Go go;
   Jail jail;
   FreeParking freeParking;
