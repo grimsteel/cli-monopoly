@@ -48,5 +48,4 @@ inline unsigned long clz(unsigned long value) {
 
 #define SET_CCHAR_COLOR(cchar, color) cchar = cchar & ~A_COLOR | (color) << 24;
 
-
 bool showYesNoPrompt(WINDOW* win, BoardState* boardState, std::string prompt, int x, int y);

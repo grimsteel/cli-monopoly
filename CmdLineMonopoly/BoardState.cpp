@@ -115,11 +115,11 @@ void BoardState::drawInitial() {
   doupdate();
 }
 void BoardState::getPlayers() {
-  for (int i = 0; i < MAX_PLAYERS; i++) {
-    Player newPlayer(static_cast<unsigned char>(players.size()) + 1);
-    bool shouldContinue = newPlayer.queryAttributes(this);
-    go.handlePlayer(&newPlayer, this);
-    players.push_back(move(newPlayer));
+  for (unsigned char i = 0; i < MAX_PLAYERS; i++) {
+    players.emplace_back(i + 1);
+    auto newPlayer = players.end() - 1;
+    bool shouldContinue = newPlayer->queryAttributes(this);
+    go.handlePlayer(&(*newPlayer), this);
     if (!shouldContinue) break;
   }
   doupdate();

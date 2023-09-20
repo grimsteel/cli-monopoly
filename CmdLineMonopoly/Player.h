@@ -18,7 +18,6 @@ class Player
 {
 public:
   Player(unsigned char id);
-  Player(Player&& p) noexcept;
   ~Player();
   bool queryAttributes(BoardState* boardState);
   unsigned char color = 0;
