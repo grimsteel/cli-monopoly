@@ -1,5 +1,6 @@
 #pragma once
 
+#define PDC_WIDE
 #include <curses.h>
 #include <string>
 #include "BoardState.h"
@@ -26,13 +27,20 @@ inline unsigned long clz(unsigned long value) {
     }
 }
 
+#define rotr _rotr8
+#define rotl _rotl8
+
+#define SET_CCHAR_COLOR(cchar, color) cchar = static_cast<unsigned int>(cchar) & ~A_COLOR | (color) << 24;
+
 #else
+#include <wchar.h>
+#include <x86intrin.h>
 
 inline unsigned long ctz(unsigned long value) {
     if (value == 0) {
         return 0;
     } else {
-        return __builtin_ctz(value);
+        return __builtin_ctzl(value);
     }
 }
 
@@ -40,12 +48,18 @@ inline unsigned long clz(unsigned long value) {
     if (value == 0) {
         return 0;
     } else {
-        return __builtin_clz(value);
+        return __builtin_clzl(value);
     }
 }
 
-#endif
+#define rotr __rorb
+#define rotl __rolb
 
-#define SET_CCHAR_COLOR(cchar, color) cchar = cchar & ~A_COLOR | (color) << 24;
+#define SET_CCHAR_COLOR(cchar, color) {\
+    wchar_t wch;attr_t attrs;short color_pair;getcchar(&cchar, &wch, &attrs, &color_pair,NULL);\
+    setcchar(&cchar, &wch, attrs, color, NULL);\
+}
+
+#endif
 
 bool showYesNoPrompt(WINDOW* win, BoardState* boardState, std::string prompt, int x, int y);

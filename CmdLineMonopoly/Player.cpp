@@ -1,6 +1,5 @@
 ﻿#define PDC_WIDE
 #include <curses.h>
-#include <intrin.h>
 #include "Player.h"
 #include "BoardItems.h"
 #include "BoardState.h"
@@ -85,12 +84,12 @@ bool Player::queryAttributes(BoardState* boardState) {
       wadd_wch(win, &playerColorChar);
       if (ch == KEY_RIGHT) {
         // Find the next unused color to the right
-        unsigned long mask = ~_rotr8(usedColors, currentIndex + 1);
+        unsigned long mask = ~rotr(usedColors, currentIndex + 1);
         currentIndex = (currentIndex + 1 + ctz(mask)) % 8;
       } else {
         // Find the next unused color to the left
         // we have to shift it by sizeof(long) - sizeof(char) to move all of the bits to the left, so clz will work
-        unsigned long mask = ~(_rotl8(usedColors, sizeof(usedColors) * 8 - currentIndex) << (sizeof(unsigned long) * 8 - sizeof(usedColors) * 8));
+        unsigned long mask = ~(static_cast<unsigned long>(rotl(usedColors, sizeof(usedColors) * 8 - currentIndex)) << (sizeof(unsigned long) * 8 - sizeof(usedColors) * 8));
         currentIndex = (currentIndex - 1 - clz(mask)) % 8;
       }
       x = currentIndex + COLOR_SELECTION_START;
