@@ -60,7 +60,7 @@ public:
   /// Pure virtual
   virtual void drawInitial() = 0;
   virtual void handlePlayer(Player* player, BoardState* mainMenu);
-  void handlePlayerLeave(unsigned char index);
+  void handlePlayerLeave(unsigned char playerId);
   void redraw();
 protected:
   WINDOW* win = nullptr;

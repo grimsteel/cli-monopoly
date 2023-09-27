@@ -61,20 +61,14 @@ void BoardItem::initWindow() {
   }
 }
 void BoardItem::handlePlayer(Player* player, BoardState* boardState) {
-  player->boardItemIndex = numPlayers++;
-  wmove(win, playerListY, numPlayers + 1);
-  wdelch(win);
-  wmove(win, playerListY, numPlayers);
-
   cchar_t playerChar;
   setcchar(&playerChar, L"\uf4ff", 0, player->color, NULL);
-  wins_wch(win, &playerChar);
+  mvwaddch(win, playerListY, player->id + 1, playerChar);
 
   wnoutrefresh(win);
 }
-void BoardItem::handlePlayerLeave(unsigned char index) {
-  mvwdelch(win, playerListY, index + 1);
-  mvwinsch(win, playerListY, numPlayers--, ' ');
+void BoardItem::handlePlayerLeave(unsigned char playerId) {
+  mvwaddch(win, playerListY, playerId + 1, ' ');
 
   wnoutrefresh(win);
 }

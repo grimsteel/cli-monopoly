@@ -100,6 +100,7 @@ BoardState::BoardState() : mt(rd()), dice(1, 6),
   }
 {
   win = newwin(10, 30, 1, H_PROPERTY_WIDTH * 2 + V_PROPERTY_WIDTH * PROPERTIES_PER_SIDE + 2);
+  keypad(win, true);
   players.reserve(MAX_PLAYERS);
   wnoutrefresh(stdscr);
 }
@@ -116,15 +117,16 @@ void BoardState::drawInitial() {
 }
 void BoardState::getPlayers() {
   for (unsigned char i = 0; i < MAX_PLAYERS; i++) {
-    players.emplace_back(i + 1);
+    players.emplace_back(i);
     auto newPlayer = players.end() - 1;
     bool shouldContinue = newPlayer->queryAttributes(this);
-    go.handlePlayer(&(*newPlayer), this);
+    // Render the player on Go
+    boardItems[newPlayer->boardItemIndex]->handlePlayer(&(*newPlayer), this);
     if (!shouldContinue) break;
   }
   doupdate();
 
-  drawMenu(&players[0], go.name);
+  doTurn(1);
 }
 void BoardState::handleCharInput(int ch) {
   if (ch == KEY_RESIZE) {
@@ -139,13 +141,85 @@ void BoardState::handleCharInput(int ch) {
   }
 }
 
-void BoardState::drawMenu(Player* player, string location) {
+void BoardState::doTurn(unsigned char playerId) {
+  Player player = players[playerId];
+  BoardItem* boardItem = boardItems[player.boardItemIndex];
+  bool canRollAgain = false;
+  while (true) {
+    char result = drawMenu(playerId, boardItem->name);
+    switch (result) {
+    case 0:
+      if (!canRollAgain) {
+        // Show error message
+        break;
+      }
+      // Roll dice
+      unsigned char rolls = rollDice();
+      unsigned char roll1 = rolls & 0b111;
+      unsigned char roll2 = rolls >> 3;
+      unsigned char total = roll1 + roll2;
+      unsigned char newBoardItemIndex = (player.boardItemIndex + total) % (sizeof(boardItems) / sizeof(BoardItem*));
+      boardItem->handlePlayerLeave(playerId);
+      player.boardItemIndex = newBoardItemIndex;
+      boardItem = boardItems[newBoardItemIndex];
+      boardItem->handlePlayer(&player, this);
+      canRollAgain = roll1 == roll2;
+      break;
+    case 4:
+      goto end_turn;
+    }
+  }
+end_turn:
+}
+
+char BoardState::drawMenu(unsigned char playerId, string location) {
   wattron(win, A_BOLD | A_UNDERLINE);
-  mvwprintw(win, 0, 0, "%s, it's your turn.", player->name.c_str());
+  mvwprintw(win, 0, 0, "%s, it's your turn.", players[playerId].name.c_str());
   wattroff(win, A_BOLD | A_UNDERLINE);
   mvwprintw(win, 1, 0, "You are on %s.", location.c_str());
 
+  wprintw(win, "\n[x] Roll Dice");
+  wprintw(win, "\n[ ] Buy Houses/Hotels");
+  wprintw(win, "\n[ ] Mortage Properties");
+  wprintw(win, "\n[ ] View Property Info");
+  wprintw(win, "\n[ ] End Turn");
+  wprintw(win, "\n[ ] End Game");
+
+  char selectedItem = 0;
+
+  curs_set(FALSE);
+
+  while (true) {
+    wrefresh(win);
+
+    int ch = wgetch(win);
+
+    handleCharInput(ch);
+
+    if (ch == KEY_UP || ch == KEY_DOWN) {
+      // Replace the 'x' of the currently selected item with a space
+      // The menu starts at y index = 2
+      // We want to replace the char at x index = 1
+      mvwaddch(win, 2 + selectedItem, 1, ' ');
+
+      if (ch == KEY_UP) selectedItem--;
+      else selectedItem++; // KEY_DOWN = higher y value because high y is down
+
+      if (selectedItem >= NUM_MENU_ITEMS) selectedItem = 0;
+      else if (selectedItem < 0) selectedItem = NUM_MENU_ITEMS - 1;
+
+      mvwaddch(win, 2 + selectedItem, 1, 'x');
+    }
+    else if (ch == KEY_ENTER || ch == '\n') {
+      break;
+    }
+  }
+
+  curs_set(FALSE);
+
   wrefresh(win);
+
+  return selectedItem;
 }
 bool BoardState::setYesNoPrompt(string prompt) {
   return showYesNoPrompt(win, this, prompt, 0, 2);

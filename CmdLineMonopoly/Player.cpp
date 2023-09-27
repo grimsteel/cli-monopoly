@@ -11,15 +11,15 @@ using namespace std;
 Player::Player(unsigned char id) : id(id) {
   /*
   |------|
-  |1    2|
-  |3    4|
+  |0    1|
+  |2    3|
   |------|
   */
 
-  // Players 1 and 3 display on the right
-  int x = (id % 2 == 1) ? H_PROPERTY_WIDTH : H_PROPERTY_WIDTH + PROPERTIES_PER_SIDE * V_PROPERTY_WIDTH - PLAYER_WIDTH - 1;
-  // Players 1 and 2 display on the top
-  int y = (id <= 2) ? V_PROPERTY_HEIGHT : V_PROPERTY_HEIGHT + PROPERTIES_PER_SIDE * H_PROPERTY_HEIGHT - PLAYER_HEIGHT - 1;
+  // Players 0 and 2 display on the right
+  int x = (id % 2 == 0) ? H_PROPERTY_WIDTH : H_PROPERTY_WIDTH + PROPERTIES_PER_SIDE * V_PROPERTY_WIDTH - PLAYER_WIDTH - 1;
+  // Players 0 and 1 display on the top
+  int y = (id <= 1) ? V_PROPERTY_HEIGHT : V_PROPERTY_HEIGHT + PROPERTIES_PER_SIDE * H_PROPERTY_HEIGHT - PLAYER_HEIGHT - 1;
   win = newwin(PLAYER_HEIGHT, PLAYER_WIDTH, y, x);
   keypad(win, TRUE);
 
@@ -35,7 +35,7 @@ Player::~Player() {
 /// @returns Whether another player should be added
 bool Player::queryAttributes(BoardState* boardState) {
   wattron(win, A_BOLD | A_UNDERLINE);
-  wprintw(win, "Player %d:", id);
+  wprintw(win, "Player %d:", id + 1);
   wattroff(win, A_BOLD | A_UNDERLINE);
   mvwaddstr(win, 1, 0, "Name: ");
   

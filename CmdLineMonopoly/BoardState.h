@@ -9,6 +9,8 @@
 
 using namespace std;
 
+constexpr char NUM_MENU_ITEMS = 6;
+
 class BoardState
 {
 public:
@@ -18,14 +20,15 @@ public:
   void getPlayers();
   void handleCharInput(int ch);
   bool setYesNoPrompt(string prompt);
-  unsigned char rollDice();
   
 private:
   WINDOW* win;
   random_device rd;
   mt19937 mt;
   uniform_int_distribution<unsigned short> dice;
-  void drawMenu(Player* player, string location);
+  char drawMenu(unsigned char playerId, string location);
+  void doTurn(unsigned char playerId);
+  unsigned char rollDice();
   vector<Player> players;
 
   Go go;

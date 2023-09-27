@@ -21,11 +21,12 @@ public:
   ~Player();
   bool queryAttributes(BoardState* boardState);
   unsigned char color = 0;
+  // Every player starts on go
   unsigned char boardItemIndex = 0;
   unsigned int balance = 0;
+  unsigned char id;
   string name;
 private:
-  unsigned char id;
   WINDOW* win;
   unsigned char static usedColors;
 };
