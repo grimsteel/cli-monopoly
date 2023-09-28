@@ -23,7 +23,7 @@ public:
   unsigned char color = 0;
   // Every player starts on go
   unsigned char boardItemIndex = 0;
-  unsigned int balance = 0;
+  unsigned int balance = 1500;
   unsigned char id;
   string name;
 private:

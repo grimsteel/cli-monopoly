@@ -125,8 +125,17 @@ void BoardState::getPlayers() {
     if (!shouldContinue) break;
   }
   doupdate();
-
-  doTurn(1);
+}
+void BoardState::mainLoop() {
+  while (true) {
+    for (int i = 0; i < players.size(); i++) {
+      if (doTurn(i)) {
+        // Quit the game
+        goto game_end;
+      }
+    }
+  }
+game_end:;
 }
 void BoardState::handleCharInput(int ch) {
   if (ch == KEY_RESIZE) {
@@ -141,35 +150,42 @@ void BoardState::handleCharInput(int ch) {
   }
 }
 
-void BoardState::doTurn(unsigned char playerId) {
-  Player player = players[playerId];
-  BoardItem* boardItem = boardItems[player.boardItemIndex];
-  bool canRollAgain = false;
+bool BoardState::doTurn(unsigned char playerId) {
+  Player* player = &players[playerId];
+  BoardItem* boardItem = boardItems[player->boardItemIndex];
+  bool canRollAgain = true;
   while (true) {
     char result = drawMenu(playerId, boardItem->name);
     switch (result) {
-    case 0:
-      if (!canRollAgain) {
-        // Show error message
+      case 0: {
+        if (!canRollAgain) {
+          // Show error message
+          break;
+        }
+        // Roll dice
+        unsigned char rolls = rollDice();
+        unsigned char roll1 = rolls & 0b111;
+        unsigned char roll2 = rolls >> 3;
+        unsigned char total = roll1 + roll2;
+        unsigned char newBoardItemIndex = (player->boardItemIndex + total) % (sizeof(boardItems) / sizeof(BoardItem*));
+        boardItem->handlePlayerLeave(playerId);
+        player->boardItemIndex = newBoardItemIndex;
+        boardItem = boardItems[newBoardItemIndex];
+        boardItem->handlePlayer(player, this);
+        doupdate();
+        // If they rolled a double, they can roll again
+        // TODO: Go to jail for speeding
+        canRollAgain = roll1 == roll2;
         break;
+      } case 4: {
+        goto end_turn;
+      } case 5: {
+        return true;
       }
-      // Roll dice
-      unsigned char rolls = rollDice();
-      unsigned char roll1 = rolls & 0b111;
-      unsigned char roll2 = rolls >> 3;
-      unsigned char total = roll1 + roll2;
-      unsigned char newBoardItemIndex = (player.boardItemIndex + total) % (sizeof(boardItems) / sizeof(BoardItem*));
-      boardItem->handlePlayerLeave(playerId);
-      player.boardItemIndex = newBoardItemIndex;
-      boardItem = boardItems[newBoardItemIndex];
-      boardItem->handlePlayer(&player, this);
-      canRollAgain = roll1 == roll2;
-      break;
-    case 4:
-      goto end_turn;
     }
   }
 end_turn:
+  return false;
 }
 
 char BoardState::drawMenu(unsigned char playerId, string location) {

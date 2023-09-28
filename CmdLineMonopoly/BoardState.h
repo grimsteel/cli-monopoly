@@ -18,6 +18,7 @@ public:
   ~BoardState();
   void drawInitial();
   void getPlayers();
+  void mainLoop();
   void handleCharInput(int ch);
   bool setYesNoPrompt(string prompt);
   
@@ -27,7 +28,8 @@ private:
   mt19937 mt;
   uniform_int_distribution<unsigned short> dice;
   char drawMenu(unsigned char playerId, string location);
-  void doTurn(unsigned char playerId);
+  /// <returns>Boolean - true if the game should be quit</returns>
+  bool doTurn(unsigned char playerId);
   unsigned char rollDice();
   vector<Player> players;
 

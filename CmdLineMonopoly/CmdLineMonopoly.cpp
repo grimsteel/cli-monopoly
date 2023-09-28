@@ -29,17 +29,7 @@ int main()
   BoardState boardState;
   boardState.drawInitial();
   boardState.getPlayers();
-
-  while (true) {
-    refresh();
-    int ch = getch();
-
-    boardState.handleCharInput(ch);
-
-    if (ch == 'q') {
-      break;
-    }
-  }
+  boardState.mainLoop();
 
   endwin();
 

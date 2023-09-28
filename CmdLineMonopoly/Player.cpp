@@ -118,7 +118,7 @@ bool Player::queryAttributes(BoardState* boardState) {
 
   mvwaddstr(win, 1, 0, "0 Properties");
   wattron(win, COLOR_PAIR(TXT_GREEN));
-  mvwaddstr(win, 2, 0, "$0");
+  mvwprintw(win, 2, 0, "$%d", balance);
   wattroff(win, COLOR_PAIR(TXT_GREEN));
 
   wrefresh(win);
