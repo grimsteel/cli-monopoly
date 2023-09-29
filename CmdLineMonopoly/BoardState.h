@@ -27,7 +27,8 @@ private:
   random_device rd;
   mt19937 mt;
   uniform_int_distribution<unsigned short> dice;
-  char drawMenu(unsigned char playerId, string location);
+  void drawHeader(unsigned char playerId, string location);
+  char drawMenu();
   /// <returns>Boolean - true if the game should be quit</returns>
   bool doTurn(unsigned char playerId);
   unsigned char rollDice();

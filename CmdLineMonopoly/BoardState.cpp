@@ -99,7 +99,7 @@ BoardState::BoardState() : mt(rd()), dice(1, 6),
     &properties[27]
   }
 {
-  win = newwin(10, 30, 1, H_PROPERTY_WIDTH * 2 + V_PROPERTY_WIDTH * PROPERTIES_PER_SIDE + 2);
+  win = newwin(10, 100, 1, H_PROPERTY_WIDTH * 2 + V_PROPERTY_WIDTH * PROPERTIES_PER_SIDE + 2);
   keypad(win, true);
   players.reserve(MAX_PLAYERS);
   wnoutrefresh(stdscr);
@@ -154,8 +154,9 @@ bool BoardState::doTurn(unsigned char playerId) {
   Player* player = &players[playerId];
   BoardItem* boardItem = boardItems[player->boardItemIndex];
   bool canRollAgain = true;
+  drawHeader(playerId, boardItem->name);
   while (true) {
-    char result = drawMenu(playerId, boardItem->name);
+    char result = drawMenu();
     switch (result) {
       case 0: {
         if (!canRollAgain) {
@@ -164,15 +165,34 @@ bool BoardState::doTurn(unsigned char playerId) {
         }
         // Roll dice
         unsigned char rolls = rollDice();
+        // TODO: display these individual rolls
         unsigned char roll1 = rolls & 0b111;
         unsigned char roll2 = rolls >> 3;
         unsigned char total = roll1 + roll2;
-        unsigned char newBoardItemIndex = (player->boardItemIndex + total) % (sizeof(boardItems) / sizeof(BoardItem*));
+
+        // Remove the player from the previous board item
         boardItem->handlePlayerLeave(playerId);
+
+        // Get the new board item
+        constexpr unsigned char NUM_BOARD_ITEMS = static_cast<unsigned char>(sizeof(boardItems) / sizeof(BoardItem*));
+        unsigned char newBoardItemIndex = player->boardItemIndex + total;
+
+        // If they passed Go,
+        if (newBoardItemIndex >= NUM_BOARD_ITEMS) {
+          // Give the salary
+          player->setBalance(player->getBalance() + 200);
+          // Wrap around
+          newBoardItemIndex -= NUM_BOARD_ITEMS;
+        }
         player->boardItemIndex = newBoardItemIndex;
         boardItem = boardItems[newBoardItemIndex];
+
+        // Draw the header, then notify the board item
+        drawHeader(playerId, boardItem->name);
         boardItem->handlePlayer(player, this);
+
         doupdate();
+
         // If they rolled a double, they can roll again
         // TODO: Go to jail for speeding
         canRollAgain = roll1 == roll2;
@@ -188,13 +208,17 @@ end_turn:
   return false;
 }
 
-char BoardState::drawMenu(unsigned char playerId, string location) {
+void BoardState::drawHeader(unsigned char playerId, string location) {
   wattron(win, A_BOLD | A_UNDERLINE);
   mvwprintw(win, 0, 0, "%s, it's your turn.", players[playerId].name.c_str());
+  wclrtoeol(win);
   wattroff(win, A_BOLD | A_UNDERLINE);
   mvwprintw(win, 1, 0, "You are on %s.", location.c_str());
+  wclrtobot(win);
+}
 
-  wprintw(win, "\n[x] Roll Dice");
+char BoardState::drawMenu() {
+  mvwprintw(win, 2, 0, "[x] Roll Dice");
   wprintw(win, "\n[ ] Buy Houses/Hotels");
   wprintw(win, "\n[ ] Mortage Properties");
   wprintw(win, "\n[ ] View Property Info");

@@ -32,6 +32,15 @@ Player::~Player() {
     delwin(win);
 }
 
+void Player::setBalance(unsigned int newBalance) {
+  balance = newBalance;
+  wattron(win, COLOR_PAIR(TXT_GREEN));
+  mvwprintw(win, 2, 0, "$%d", balance);
+  wclrtoeol(win);
+  wattroff(win, COLOR_PAIR(TXT_GREEN));
+  wnoutrefresh(win);
+}
+
 /// @returns Whether another player should be added
 bool Player::queryAttributes(BoardState* boardState) {
   wattron(win, A_BOLD | A_UNDERLINE);
@@ -117,9 +126,7 @@ bool Player::queryAttributes(BoardState* boardState) {
   wattroff(win, A_BOLD | A_UNDERLINE);
 
   mvwaddstr(win, 1, 0, "0 Properties");
-  wattron(win, COLOR_PAIR(TXT_GREEN));
-  mvwprintw(win, 2, 0, "$%d", balance);
-  wattroff(win, COLOR_PAIR(TXT_GREEN));
+  setBalance(1500);
 
   wrefresh(win);
 

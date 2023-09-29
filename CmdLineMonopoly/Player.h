@@ -3,9 +3,11 @@
 #define PDC_WIDE
 #include <string>
 #include <curses.h>
+#include <vector>
 
 // Forward declaration
 class BoardState;
+class Property;
 
 using namespace std;
 
@@ -23,10 +25,14 @@ public:
   unsigned char color = 0;
   // Every player starts on go
   unsigned char boardItemIndex = 0;
-  unsigned int balance = 1500;
   unsigned char id;
   string name;
+  void setBalance(unsigned int newBalance);
+  unsigned int getBalance() { return balance; }
+  void addProperty(Property* property) { properties.push_back(property); }
 private:
+  unsigned int balance = 0;
   WINDOW* win;
   unsigned char static usedColors;
+  vector<Property*> properties;
 };

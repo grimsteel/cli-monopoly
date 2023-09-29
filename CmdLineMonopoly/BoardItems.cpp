@@ -63,7 +63,7 @@ void BoardItem::initWindow() {
 void BoardItem::handlePlayer(Player* player, BoardState* boardState) {
   cchar_t playerChar;
   setcchar(&playerChar, L"\uf4ff", 0, player->color, NULL);
-  mvwaddch(win, playerListY, player->id + 1, playerChar);
+  mvwadd_wch(win, playerListY, player->id + 1, &playerChar);
 
   wnoutrefresh(win);
 }
@@ -127,9 +127,11 @@ void Property::drawInitial() {
 }
 void Property::handlePlayer(Player* player, BoardState* boardState) {
   BoardItem::handlePlayer(player, boardState);
-  bool shouldBuy = player->balance >= price && boardState->setYesNoPrompt("Would you like to buy this property?");
+  bool shouldBuy = player->getBalance() >= price && boardState->setYesNoPrompt("Would you like to buy this property?");
   if (shouldBuy) {
-    // transfer
+    player->setBalance(player->getBalance() - price);
+    ownedBy = player->id;
+    player->addProperty(this);
   }
 }
 #pragma endregion
