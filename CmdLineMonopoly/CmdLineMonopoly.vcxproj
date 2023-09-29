@@ -80,6 +80,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BoardCenter.cpp" />
     <ClCompile Include="BoardItems.cpp" />
     <ClCompile Include="CmdLineMonopoly.cpp" />
     <ClCompile Include="Player.cpp" />
@@ -88,6 +89,7 @@
     <ClCompile Include="BoardState.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BoardCenter.h" />
     <ClInclude Include="BoardItems.h" />
     <ClInclude Include="CmdLineMonopoly.h" />
     <ClInclude Include="Player.h" />
