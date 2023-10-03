@@ -14,7 +14,7 @@ using namespace std;
 constexpr int COLOR_SELECTION_START = 7;
 constexpr int MAX_PLAYERS = 4;
 constexpr int PLAYER_HEIGHT = 6;
-constexpr int PLAYER_WIDTH = 20;
+constexpr int PLAYER_WIDTH = 40;
 
 class Player
 {
@@ -27,12 +27,13 @@ public:
   unsigned char boardItemIndex = 0;
   unsigned char id;
   string name;
-  void setBalance(unsigned int newBalance);
   unsigned int getBalance() { return balance; }
+  bool alterBalance(int value, string reason);
   void addProperty(Property* property) { properties.push_back(property); }
 private:
   unsigned int balance = 0;
   WINDOW* win;
   unsigned char static usedColors;
   vector<Property*> properties;
+  void setBalance(unsigned int newBalance);
 };

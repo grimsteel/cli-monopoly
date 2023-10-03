@@ -2,6 +2,7 @@
 #include "BoardState.h"
 #define PDC_WIDE
 #include <curses.h>
+#include <format>
 
 #pragma region BoardItem class definition
 BoardItem::BoardItem(unsigned char index, string name, BoardItemLocation location) : index(index), name(name), location(location) {
@@ -75,7 +76,7 @@ void BoardItem::handlePlayerLeave(unsigned char playerId) {
 #pragma endregion
 
 #pragma region Property class definition
-Property::Property(unsigned char index, string name, string displayName, unsigned short price, unsigned char colorGroup, BoardItemLocation location)
+Property::Property(unsigned char index, string name, string displayName, int price, unsigned char colorGroup, BoardItemLocation location)
   : BoardItem(index, name, location), displayName(displayName), price(price), colorGroup(colorGroup) {}
 
 /// Draw the entire card. This should only be called at the start
@@ -127,11 +128,17 @@ void Property::drawInitial() {
 }
 void Property::handlePlayer(Player* player, BoardState* boardState) {
   BoardItem::handlePlayer(player, boardState);
-  bool shouldBuy = player->getBalance() >= price && boardState->setYesNoPrompt("Would you like to buy this property?");
-  if (shouldBuy) {
-    player->setBalance(player->getBalance() - price);
-    ownedBy = player->id;
-    player->addProperty(this);
+  if (ownedBy == 255) {
+    bool shouldBuy = player->getBalance() >= static_cast<unsigned int>(price) && boardState->setYesNoPrompt("Would you like to buy this property?");
+    if (shouldBuy) {
+      player->alterBalance(-price, format("Bought {}", name));
+      ownedBy = player->id;
+      player->addProperty(this);
+    }
+  } else {
+    // TODO: implement rent
+    player->alterBalance(-0, format("Rent for {}", name));
+    boardState->players[ownedBy].alterBalance(+0, format("Rent for {}", name));    
   }
 }
 #pragma endregion

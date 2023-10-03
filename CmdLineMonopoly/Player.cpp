@@ -32,6 +32,22 @@ Player::~Player() {
     delwin(win);
 }
 
+bool Player::alterBalance(int value, string reason) {
+  // Check for bankruptcy
+  if (value + balance <= 0) return false;
+
+  setBalance(balance + value);
+
+  mvwdeleteln(win, 3, 0);
+  wattron(win, COLOR_PAIR(value > 0 ? TXT_GREEN : TXT_RED) | A_BOLD);
+  mvwprintw(win, 5, 0, "%+d (%s)", value, reason.c_str());
+  wattroff(win, COLOR_PAIR(value > 0 ? TXT_GREEN : TXT_RED) | A_BOLD);
+
+  wrefresh(win);
+  
+  return true;
+}
+
 void Player::setBalance(unsigned int newBalance) {
   balance = newBalance;
   wattron(win, COLOR_PAIR(TXT_GREEN));

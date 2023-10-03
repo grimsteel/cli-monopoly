@@ -22,7 +22,7 @@ public:
   void mainLoop();
   void handleCharInput(int ch);
   bool setYesNoPrompt(string prompt);
-  
+  vector<Player> players;
 private:
   WINDOW* win;
   BoardCenter boardCenter;
@@ -30,11 +30,10 @@ private:
   mt19937 mt;
   uniform_int_distribution<unsigned short> dice;
   void drawHeader(unsigned char playerId, string location);
-  char drawMenu();
+  char drawMenu(bool showRollDice);
   /// <returns>Boolean - true if the game should be quit</returns>
   bool doTurn(unsigned char playerId);
   unsigned char rollDice();
-  vector<Player> players;
 
   Go go;
   Jail jail;

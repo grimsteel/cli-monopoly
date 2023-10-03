@@ -126,6 +126,7 @@ void BoardState::getPlayers() {
   }
   doupdate();
 }
+
 void BoardState::mainLoop() {
   while (true) {
     for (int i = 0; i < players.size(); i++) {
@@ -182,7 +183,7 @@ bool BoardState::doTurn(unsigned char playerId) {
         // If they passed Go,
         if (newBoardItemIndex >= NUM_BOARD_ITEMS) {
           // Give the salary
-          player->setBalance(player->getBalance() + 200);
+          player->alterBalance(200, "Salary");
           // Wrap around
           newBoardItemIndex -= NUM_BOARD_ITEMS;
         }
@@ -219,15 +220,20 @@ void BoardState::drawHeader(unsigned char playerId, string location) {
   wclrtobot(win);
 }
 
-char BoardState::drawMenu() {
-  mvwprintw(win, 2, 0, "[x] Roll Dice");
-  wprintw(win, "\n[ ] Buy Houses/Hotels");
+char BoardState::drawMenu(bool showRollDice) {
+  if (showRollDice) {
+    mvwprintw(win, 2, 0, "[x] Roll Dice");
+    wprintw(win, "\n[ ] Buy Houses/Hotels");
+  }
+  else {
+    mvwprintw(win, 3, 0, "[x] Buy Houses/Hotels");
+  }
   wprintw(win, "\n[ ] Mortage Properties");
   wprintw(win, "\n[ ] View Property Info");
   wprintw(win, "\n[ ] End Turn");
   wprintw(win, "\n[ ] End Game");
 
-  char selectedItem = 0;
+  char selectedItem = static_cast<char>(showRollDice);
 
   curs_set(FALSE);
 
