@@ -170,6 +170,8 @@ bool BoardState::doTurn(unsigned char playerId) {
         unsigned char roll2 = rolls >> 3;
         unsigned char total = roll1 + roll2;
 
+        boardCenter.showDiceRoll(roll1, roll2);
+
         // Remove the player from the previous board item
         boardItem->handlePlayerLeave(playerId);
 

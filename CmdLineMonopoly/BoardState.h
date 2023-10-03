@@ -5,6 +5,7 @@
 #include <random>
 #include <vector>
 #include "BoardItems.h"
+#include "BoardCenter.h"
 #include "Player.h"
 
 using namespace std;
@@ -24,6 +25,7 @@ public:
   
 private:
   WINDOW* win;
+  BoardCenter boardCenter;
   random_device rd;
   mt19937 mt;
   uniform_int_distribution<unsigned short> dice;
