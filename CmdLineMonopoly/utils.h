@@ -3,7 +3,6 @@
 #define PDC_WIDE
 #include <curses.h>
 #include <string>
-#include "BoardState.h"
 
 #ifdef _MSC_VER
 #include <intrin.h>
@@ -61,5 +60,7 @@ inline unsigned long clz(unsigned long value) {
 }
 
 #endif
+
+#include "BoardState.h"
 
 bool showYesNoPrompt(WINDOW* win, BoardState* boardState, std::string prompt, int x, int y);
