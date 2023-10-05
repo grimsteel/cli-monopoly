@@ -252,13 +252,14 @@ char BoardState::drawMenu(bool showRollDice) {
 
     handleCharInput(ch);
 
-    if (ch == KEY_UP || ch == KEY_DOWN) {
+    if (ch == KEY_UP || ch == KEY_DOWN || (ch >= '1' && ch <= '0' + numMenuItems)) {
       // The menu starts at y index = 2
       // We want to replace the char at x index = 0
       mvwadd_wch(win, 2 + selectedItem, 0, &unselectedItemChar);
 
       if (ch == KEY_UP) selectedItem--;
-      else selectedItem++; // KEY_DOWN = higher y value because high y is down
+      else if (ch == KEY_DOWN) selectedItem++; // KEY_DOWN = higher y value because high y is down
+      else selectedItem = ch - '1';
 
       if (selectedItem >= numMenuItems) selectedItem = 0;
       else if (selectedItem < 0) selectedItem = numMenuItems - 1;

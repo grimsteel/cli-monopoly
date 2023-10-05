@@ -85,6 +85,7 @@ public:
   void handlePlayer(Player* player, BoardState* mainMenu) override;
 private:
   unsigned char colorGroup;
+  void drawPlayerOwn(Player* player);
 };
 
 /// Chance or Community Chest

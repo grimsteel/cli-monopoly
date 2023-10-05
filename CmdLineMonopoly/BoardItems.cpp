@@ -131,19 +131,24 @@ void Property::handlePlayer(Player* player, BoardState* boardState) {
     bool shouldBuy = player->getBalance() >= static_cast<unsigned int>(price) && boardState->setYesNoPrompt("Would you like to buy this property?");
     if (shouldBuy) {
       char boughtCString[100];
-      sprintf(boughtCString, "Bought %s", name.c_str());
+      sprintf_s(boughtCString, "Bought %s", name.c_str());
       player->alterBalance(-price, string(boughtCString));
       ownedBy = player->id;
       player->addProperty(this);
+      wmove(win, playerListY + 1, 1);
+      wclrtoeol(win);
+      wnoutrefresh(win);
     }
   } else {
     // TODO: implement rent
     char rentCString[100];
-    sprintf(rentCString, "Rent for %s", name.c_str());
+    sprintf_s(rentCString, "Rent for %s", name.c_str());
     string rentString(rentCString);
     player->alterBalance(-0, rentString);
     boardState->players[ownedBy].alterBalance(+0, rentString);    
   }
+}
+void Property::drawPlayerOwn(Player* player ){
 }
 #pragma endregion
 
