@@ -236,8 +236,10 @@ char BoardState::drawMenu(bool showRollDice) {
   setcchar(&unselectedItemChar, L"\uf10c", 0, 0, NULL);
   setcchar(&selectedItemChar, L"\uf111", 0, TXT_GREEN, NULL);
 
-  mvwvline(win, 2, 0, unselectedItemChar, numMenuItems);
   mvwadd_wch(win, 2, 0, &selectedItemChar);
+  for (char i = 1; i < numMenuItems; i++) {
+    mvwadd_wch(win, 2 + i, 0, &unselectedItemChar);
+  }
 
   char selectedItem = 0;
 

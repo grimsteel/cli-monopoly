@@ -2,7 +2,6 @@
 #include "BoardState.h"
 #define PDC_WIDE
 #include <curses.h>
-#include <format>
 
 #pragma region BoardItem class definition
 BoardItem::BoardItem(unsigned char index, string name, BoardItemLocation location) : index(index), name(name), location(location) {
@@ -131,14 +130,19 @@ void Property::handlePlayer(Player* player, BoardState* boardState) {
   if (ownedBy == 255) {
     bool shouldBuy = player->getBalance() >= static_cast<unsigned int>(price) && boardState->setYesNoPrompt("Would you like to buy this property?");
     if (shouldBuy) {
-      player->alterBalance(-price, format("Bought {}", name));
+      char boughtCString[100];
+      sprintf(boughtCString, "Bought %s", name.c_str());
+      player->alterBalance(-price, string(boughtCString));
       ownedBy = player->id;
       player->addProperty(this);
     }
   } else {
     // TODO: implement rent
-    player->alterBalance(-0, format("Rent for {}", name));
-    boardState->players[ownedBy].alterBalance(+0, format("Rent for {}", name));    
+    char rentCString[100];
+    sprintf(rentCString, "Rent for %s", name.c_str());
+    string rentString(rentCString);
+    player->alterBalance(-0, rentString);
+    boardState->players[ownedBy].alterBalance(+0, rentString);    
   }
 }
 #pragma endregion
