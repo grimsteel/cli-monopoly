@@ -114,7 +114,7 @@ bool Player::queryAttributes(BoardState* boardState) {
       } else {
         // Find the next unused color to the left
         // we have to shift it by sizeof(long) - sizeof(char) to move all of the bits to the left, so clz will work
-        unsigned long mask = ~(static_cast<unsigned long>(rotl(usedColors, sizeof(usedColors) * 8 - currentIndex)) << (sizeof(unsigned long) * 8 - sizeof(usedColors) * 8));
+        unsigned long mask = ~(static_cast<unsigned long>(rotl(usedColors, static_cast<unsigned char>(sizeof(usedColors) * 8 - currentIndex))) << (sizeof(unsigned long) * 8 - sizeof(usedColors) * 8));
         currentIndex = (currentIndex - 1 - clz(mask)) % 8;
       }
       x = currentIndex + COLOR_SELECTION_START;

@@ -1,3 +1,5 @@
+﻿#define PDC_WIDE
+
 #include "BoardState.h"
 #include <curses.h>
 #include <string>
@@ -99,7 +101,7 @@ BoardState::BoardState() : mt(rd()), dice(1, 6),
     &properties[27]
   }
 {
-  win = newwin(10, 100, 1, H_PROPERTY_WIDTH * 2 + V_PROPERTY_WIDTH * PROPERTIES_PER_SIDE + 2);
+  win = newwin(10, 75, 1, H_PROPERTY_WIDTH * 2 + V_PROPERTY_WIDTH * PROPERTIES_PER_SIDE + 2);
   keypad(win, true);
   players.reserve(MAX_PLAYERS);
   wnoutrefresh(stdscr);
@@ -157,13 +159,9 @@ bool BoardState::doTurn(unsigned char playerId) {
   bool canRollAgain = true;
   drawHeader(playerId, boardItem->name);
   while (true) {
-    char result = drawMenu();
+    char result = drawMenu(canRollAgain);
     switch (result) {
       case 0: {
-        if (!canRollAgain) {
-          // Show error message
-          break;
-        }
         // Roll dice
         unsigned char rolls = rollDice();
         // TODO: display these individual rolls
@@ -221,19 +219,27 @@ void BoardState::drawHeader(unsigned char playerId, string location) {
 }
 
 char BoardState::drawMenu(bool showRollDice) {
-  if (showRollDice) {
-    mvwprintw(win, 2, 0, "[x] Roll Dice");
-    wprintw(win, "\n[ ] Buy Houses/Hotels");
-  }
-  else {
-    mvwprintw(win, 3, 0, "[x] Buy Houses/Hotels");
-  }
-  wprintw(win, "\n[ ] Mortage Properties");
-  wprintw(win, "\n[ ] View Property Info");
-  wprintw(win, "\n[ ] End Turn");
-  wprintw(win, "\n[ ] End Game");
+  char numMenuItems = showRollDice ? NUM_MENU_ITEMS : NUM_MENU_ITEMS - 1;
 
-  char selectedItem = static_cast<char>(showRollDice);
+  wmove(win, 2, 0);
+  if (showRollDice) {
+    wprintw(win, "  Roll Dice\n");
+  }
+  wprintw(win, "  Buy Houses/Hotels\n");
+  wprintw(win, "  Mortage Properties\n");
+  wprintw(win, "  View Property Info\n");
+  wprintw(win, "  End Turn\n");
+  wprintw(win, "  End Game");
+
+  cchar_t unselectedItemChar;
+  cchar_t selectedItemChar;
+  setcchar(&unselectedItemChar, L"\uf10c", 0, 0, NULL);
+  setcchar(&selectedItemChar, L"\uf111", 0, TXT_GREEN, NULL);
+
+  mvwvline(win, 2, 0, unselectedItemChar, numMenuItems);
+  mvwadd_wch(win, 2, 0, &selectedItemChar);
+
+  char selectedItem = 0;
 
   curs_set(FALSE);
 
@@ -245,18 +251,17 @@ char BoardState::drawMenu(bool showRollDice) {
     handleCharInput(ch);
 
     if (ch == KEY_UP || ch == KEY_DOWN) {
-      // Replace the 'x' of the currently selected item with a space
       // The menu starts at y index = 2
-      // We want to replace the char at x index = 1
-      mvwaddch(win, 2 + selectedItem, 1, ' ');
+      // We want to replace the char at x index = 0
+      mvwadd_wch(win, 2 + selectedItem, 0, &unselectedItemChar);
 
       if (ch == KEY_UP) selectedItem--;
       else selectedItem++; // KEY_DOWN = higher y value because high y is down
 
-      if (selectedItem >= NUM_MENU_ITEMS) selectedItem = 0;
-      else if (selectedItem < 0) selectedItem = NUM_MENU_ITEMS - 1;
+      if (selectedItem >= numMenuItems) selectedItem = 0;
+      else if (selectedItem < 0) selectedItem = numMenuItems - 1;
 
-      mvwaddch(win, 2 + selectedItem, 1, 'x');
+      mvwadd_wch(win, 2 + selectedItem, 0, &selectedItemChar);
     }
     else if (ch == KEY_ENTER || ch == '\n') {
       break;
@@ -266,6 +271,8 @@ char BoardState::drawMenu(bool showRollDice) {
   curs_set(FALSE);
 
   wrefresh(win);
+
+  if (!showRollDice) selectedItem++;
 
   return selectedItem;
 }
