@@ -7,20 +7,20 @@ This project will have three main parts:
 2. A console interface to Monopoly using `pdcurses`.
 3. A Win32 GUI for interacting with Monopoly
 
-Progress:
+### Progress:
 - [ ] Monopoly Library
-  - [ ] Properties
+  - [x] Properties
   - [ ] Money dealing (rent)
   - [ ] Houses
   - [ ] Chance/Community Chest
 - [ ] Console Interface
-  - [ ] Properties
-  - [ ] Menu
+  - [x] Properties
+  - [x] Menu
   - [ ] Stats
 - [ ] Win32 GUI
 - [ ] 
 
-Structure of a turn:
+### Structure of a turn:
 
 1. Player is prompted with a menu. They may either:
     1. Roll dice
@@ -39,3 +39,11 @@ Structure of a turn:
 1. If any of these actions reduced the player's balance to 0, they are declared bankrupt and cannot particpate further
 1. Next, the menu is presented again. The option to roll a dice will only appear if they rolled doubles
 1. If they roll doubles 3 times, they immediately go to jail, and are presented with the menu again
+1. 
+
+### Property Value Calculation
+
+[Wikibooks](https://en.wikibooks.org/wiki/Monopoly/Properties_reference)
+
+There does not seem to be a visible pattern.
+For some properties, 2 house rent = 3 * 1 house rent

@@ -135,8 +135,7 @@ void Property::handlePlayer(Player* player, BoardState* boardState) {
       player->alterBalance(-price, string(boughtCString));
       ownedBy = player->id;
       player->addProperty(this);
-      wmove(win, playerListY + 1, 1);
-      wclrtoeol(win);
+      drawPlayerOwn(player);
       wnoutrefresh(win);
     }
   } else {
@@ -148,7 +147,33 @@ void Property::handlePlayer(Player* player, BoardState* boardState) {
     boardState->players[ownedBy].alterBalance(+0, rentString);    
   }
 }
-void Property::drawPlayerOwn(Player* player ){
+void Property::drawPlayerOwn(Player* player) {
+  cchar_t playerOwnChar;
+  setcchar(&playerOwnChar, L"\uf4ca", 0, player->color, NULL);
+
+  // Clear the price line and print the player char
+  switch (location) {
+  case Top:
+    wmove(win, playerListY - 1, 1);
+    wadd_wch(win, &playerOwnChar);
+    waddstr(win, "          ");
+    break;
+  case Left:
+    wmove(win, playerListY + 1, 1);
+    wadd_wch(win, &playerOwnChar);
+    waddstr(win, "             ");
+    break;
+  case Right:
+    wmove(win, playerListY + 1, 1);
+    wadd_wch(win, &playerOwnChar);
+    waddstr(win, "             ");
+    break;
+  case Bottom:
+    wmove(win, playerListY + 1, 1);
+    wadd_wch(win, &playerOwnChar);
+    waddstr(win, "         ");
+    break;
+  }
 }
 #pragma endregion
 
