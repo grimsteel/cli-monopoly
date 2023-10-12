@@ -74,11 +74,22 @@ protected:
 /// A single Property card on the map
 class Property : public BoardItem {
 public:
-  Property(unsigned char index, string name, string displayName, int price, unsigned char colorGroup, BoardItemLocation location);
+  struct Prices {
+    short price;
+    // mortgage price is half of the normal price
+    // unmortgage price is 1.1 * mortgageValue
+    short buildingPrice;
+    short rentSite; // initial rent for the property
+    short rent1; // 1 house
+    short rent2;
+    short rent3;
+    short rent4;
+    short rentHotel;
+  };
+
+  Property(unsigned char index, string name, string displayName, Prices prices, unsigned char colorGroup, BoardItemLocation location);
   string displayName;
-  int price;
-  int mortgagePrice;
-  int housePrice;
+  Prices prices;
   unsigned char ownedBy = 255; // 0-254 are player IDs, 255 is -1
   unsigned char numHouses = 0; // 5 houses equals 1 hotel
   void drawInitial() override;

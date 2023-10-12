@@ -32,7 +32,7 @@ Player::~Player() {
     delwin(win);
 }
 
-bool Player::alterBalance(int value, string reason) {
+bool Player::alterBalance(short value, string reason) {
   // Check for bankruptcy
   if (value + balance <= 0) return false;
 
@@ -50,7 +50,7 @@ bool Player::alterBalance(int value, string reason) {
   return true;
 }
 
-void Player::setBalance(unsigned int newBalance) {
+void Player::setBalance(short newBalance) {
   balance = newBalance;
   wattron(win, COLOR_PAIR(TXT_GREEN));
   mvwprintw(win, 2, 0, "$%d", balance);

@@ -2,6 +2,7 @@
 #include "BoardState.h"
 #define PDC_WIDE
 #include <curses.h>
+#include <cstdio>
 
 #pragma region BoardItem class definition
 BoardItem::BoardItem(unsigned char index, string name, BoardItemLocation location) : index(index), name(name), location(location) {
@@ -75,8 +76,8 @@ void BoardItem::handlePlayerLeave(unsigned char playerId) {
 #pragma endregion
 
 #pragma region Property class definition
-Property::Property(unsigned char index, string name, string displayName, int price, unsigned char colorGroup, BoardItemLocation location)
-  : BoardItem(index, name, location), displayName(displayName), price(price), colorGroup(colorGroup) {}
+Property::Property(unsigned char index, string name, string displayName, Prices prices, unsigned char colorGroup, BoardItemLocation location)
+  : BoardItem(index, name, location), displayName(displayName), prices(prices), colorGroup(colorGroup) {}
 
 /// Draw the entire card. This should only be called at the start
 void Property::drawInitial() {
@@ -120,7 +121,7 @@ void Property::drawInitial() {
 
   waddstr(win, "PRICE $");
   wattron(win, A_UNDERLINE | A_BOLD);
-  waddstr(win, to_string(price).c_str());
+  waddstr(win, to_string(prices.price).c_str());
   wattroff(win, A_UNDERLINE | A_BOLD);
 
   wnoutrefresh(win);
@@ -128,23 +129,23 @@ void Property::drawInitial() {
 void Property::handlePlayer(Player* player, BoardState* boardState) {
   BoardItem::handlePlayer(player, boardState);
   if (ownedBy == 255) {
-    bool shouldBuy = player->getBalance() >= static_cast<unsigned int>(price) && boardState->setYesNoPrompt("Would you like to buy this property?");
+    bool shouldBuy = player->getBalance() >= prices.price && boardState->setYesNoPrompt("Would you like to buy this property?");
     if (shouldBuy) {
       char boughtCString[100];
-      sprintf_s(boughtCString, "Bought %s", name.c_str());
-      player->alterBalance(-price, string(boughtCString));
+      snprintf(boughtCString, 100, "Bought %s", name.c_str());
+      player->alterBalance(-prices.price, string(boughtCString));
       ownedBy = player->id;
       player->addProperty(this);
       drawPlayerOwn(player);
       wnoutrefresh(win);
     }
   } else {
-    // TODO: implement rent
+    // TODO: implement different rent calculation
     char rentCString[100];
-    sprintf_s(rentCString, "Rent for %s", name.c_str());
+    snprintf(rentCString, 100, "Rent for %s", name.c_str());
     string rentString(rentCString);
-    player->alterBalance(-0, rentString);
-    boardState->players[ownedBy].alterBalance(+0, rentString);    
+    player->alterBalance(-prices.rentSite, rentString);
+    boardState->players[ownedBy].alterBalance(+prices.rentSite, rentString);    
   }
 }
 void Property::drawPlayerOwn(Player* player) {

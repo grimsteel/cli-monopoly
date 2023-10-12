@@ -27,13 +27,13 @@ public:
   unsigned char boardItemIndex = 0;
   unsigned char id;
   string name;
-  unsigned int getBalance() { return balance; }
-  bool alterBalance(int value, string reason);
+  short getBalance() { return balance; }
+  bool alterBalance(short value, string reason);
   void addProperty(Property* property) { properties.push_back(property); }
 private:
-  unsigned int balance = 0;
+  short balance = 0;
   WINDOW* win;
   unsigned char static usedColors;
   vector<Property*> properties;
-  void setBalance(unsigned int newBalance);
+  void setBalance(short newBalance);
 };
