@@ -157,7 +157,7 @@ void Property::drawPlayerOwn(Player* player) {
   case Top:
     wmove(win, playerListY - 1, 1);
     wadd_wch(win, &playerOwnChar);
-    waddstr(win, "          ");
+    waddstr(win, "         ");
     break;
   case Left:
     wmove(win, playerListY + 1, 1);
