@@ -144,8 +144,22 @@ void Property::handlePlayer(Player* player, BoardState* boardState) {
     char rentCString[100];
     snprintf(rentCString, 100, "Rent for %s", name.c_str());
     string rentString(rentCString);
-    player->alterBalance(-prices.rentSite, rentString);
-    boardState->players[ownedBy].alterBalance(+prices.rentSite, rentString);    
+
+    // TODO: Figure out if it's a railroad/utility
+    /*
+    if (isRailroad) {
+      unsigned char numRailroadsOwned = boardState->numRailroadsOwned(ownedBy);
+      short rent = 25 * numRailroadsOwned;
+    } else if (isUtility) {
+      short multiplier = boardState->ownsBothUtilities(ownedBy) ? 10 : 4;
+      short rent = multiplier * diceRoll;
+    }
+    */
+
+    short rent = prices.rent[numHouses];
+
+    player->alterBalance(-rent, rentString);
+    boardState->players[ownedBy].alterBalance(rent, rentString);
   }
 }
 void Property::drawPlayerOwn(Player* player) {

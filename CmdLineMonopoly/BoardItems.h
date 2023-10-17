@@ -79,12 +79,8 @@ public:
     // mortgage price is half of the normal price
     // unmortgage price is 1.1 * mortgageValue
     short buildingPrice;
-    short rentSite; // initial rent for the property
-    short rent1; // 1 house
-    short rent2;
-    short rent3;
-    short rent4;
-    short rentHotel;
+    // initial rent, rent for 1-4 houses, and hotel rent
+    short rent[6];
   };
 
   Property(unsigned char index, string name, string displayName, Prices prices, unsigned char colorGroup, BoardItemLocation location);
