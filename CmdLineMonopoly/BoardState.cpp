@@ -163,6 +163,9 @@ void BoardState::handleCharInput(int ch) {
 unsigned char BoardState::numRailroadsOwned(unsigned char playerId) {
   unsigned char numRailroads = 0;
 
+  // Correspond to indices 5, 15, 25, and 35 in the boardItems array
+  constexpr int railroadPropertyIndices[] = { 2, 10, 17, 25 };
+
   for (int i : railroadPropertyIndices) {
     if (properties[i].ownedBy == playerId) numRailroads++;
   }
@@ -171,11 +174,8 @@ unsigned char BoardState::numRailroadsOwned(unsigned char playerId) {
 }
 
 bool BoardState::ownsBothUtilities(unsigned char playerId) {
-  for (int i : utilityPropertyIndices) {
-    if (properties[i].ownedBy != playerId) return false;
-  }
-
-  return true;
+  // Correspond to indices 12 and 28 in the boardItems array
+  return properties[7].ownedBy == playerId && properties[20].ownedBy == playerId;
 }
 
 bool BoardState::doTurn(unsigned char playerId) {

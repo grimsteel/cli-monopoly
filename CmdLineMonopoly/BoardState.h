@@ -12,11 +12,6 @@ using namespace std;
 
 constexpr char NUM_MENU_ITEMS = 6;
 
-// Correspond to indices 5, 15, 25, and 35 in the boardItems array
-constexpr int railroadPropertyIndices[] = { 2, 10, 17, 25 };
-
-constexpr int utilityPropertyIndices[] = { 7, 20 };
-
 class BoardState
 {
 public:

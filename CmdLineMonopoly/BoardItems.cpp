@@ -145,16 +145,17 @@ void Property::handlePlayer(Player* player, BoardState* boardState) {
     snprintf(rentCString, 100, "Rent for %s", name.c_str());
     string rentString(rentCString);
 
-    // TODO: Figure out if it's a railroad/utility
-    /*
+    bool isUtility = player->boardItemIndex == 12 || player->boardItemIndex == 28;
+    bool isRailroad = player->boardItemIndex = 5 || player->boardItemIndex == 15 || player->boardItemIndex == 25 || player->boardItemIndex == 35;
+    
     if (isRailroad) {
       unsigned char numRailroadsOwned = boardState->numRailroadsOwned(ownedBy);
       short rent = 25 * numRailroadsOwned;
     } else if (isUtility) {
       short multiplier = boardState->ownsBothUtilities(ownedBy) ? 10 : 4;
-      short rent = multiplier * diceRoll;
+      //short rent = multiplier * diceRoll;
     }
-    */
+    
 
     short rent = prices.rent[numHouses];
 
