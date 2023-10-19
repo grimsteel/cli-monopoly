@@ -180,21 +180,35 @@ bool BoardState::ownsBothUtilities(unsigned char playerId) {
 
 bool BoardState::doTurn(unsigned char playerId) {
   Player* player = &players[playerId];
-  BoardItem* boardItem = boardItems[player->boardItemIndex];
+  unsigned char numRolls = 0;
   bool canRollAgain = true;
-  drawHeader(playerId, boardItem->name);
+  BoardItem* boardItem = NULL;
+
+  if (player->boardItemIndex == 255) {
+    canRollAgain = false;
+
+    drawHeader(playerId, "Jail");
+  } else {
+    boardItem = boardItems[player->boardItemIndex];
+    drawHeader(playerId, boardItem->name);
+  }
+  
+
   while (true) {
     char result = drawMenu(canRollAgain);
     switch (result) {
       case 0: {
         // Roll dice
         unsigned char rolls = rollDice();
-        // TODO: display these individual rolls
+        numRolls++;
         unsigned char roll1 = rolls & 0b111;
         unsigned char roll2 = rolls >> 3;
         unsigned char total = roll1 + roll2;
 
         boardCenter.showDiceRoll(roll1, roll2);
+
+        // If they rolled a double, they can roll again
+        canRollAgain = roll1 == roll2;
 
         // Remove the player from the previous board item
         boardItem->handlePlayerLeave(playerId);
@@ -210,18 +224,29 @@ bool BoardState::doTurn(unsigned char playerId) {
           // Wrap around
           newBoardItemIndex -= NUM_BOARD_ITEMS;
         }
-        player->boardItemIndex = newBoardItemIndex;
-        boardItem = boardItems[newBoardItemIndex];
 
-        // Draw the header, then notify the board item
-        drawHeader(playerId, boardItem->name);
-        boardItem->handlePlayer(player, this);
+        // If they rolled doubles three times in a row, go to jail
+        if (canRollAgain && numRolls == 3) {
+          canRollAgain = false;
+          newBoardItemIndex = 255; // jail
+        }
+
+        player->boardItemIndex = newBoardItemIndex;
+        player->lastDiceRoll = total;
+        
+        if (newBoardItemIndex == 255) {
+          drawHeader(playerId, "Jail");
+          jail.arrestPlayer(player, this);
+        }
+        else {
+          boardItem = boardItems[newBoardItemIndex];
+
+          // Draw the header, then notify the board item
+          drawHeader(playerId, boardItem->name);
+          boardItem->handlePlayer(player, this);
+        }
 
         doupdate();
-
-        // If they rolled a double, they can roll again
-        // TODO: Go to jail for speeding
-        canRollAgain = roll1 == roll2;
         break;
       } case 4: {
         goto end_turn;
@@ -308,8 +333,8 @@ bool BoardState::setYesNoPrompt(string prompt) {
   return showYesNoPrompt(win, this, prompt, 0, 2);
 }
 unsigned char BoardState::rollDice() {
-  auto roll1 = dice(mt);
-  auto roll2 = dice(mt);
+  auto roll1 = 2; // dice(mt);
+  auto roll2 = 2; // dice(mt);
 
   // Each roll is from 1 to 6, which can be represented with 3 bits
   // This combines the two rolls into one byte. Roll 1 is the first 3 bytes, roll 2 is the next 3

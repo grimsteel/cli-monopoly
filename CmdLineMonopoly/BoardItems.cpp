@@ -146,18 +146,16 @@ void Property::handlePlayer(Player* player, BoardState* boardState) {
     string rentString(rentCString);
 
     bool isUtility = player->boardItemIndex == 12 || player->boardItemIndex == 28;
-    bool isRailroad = player->boardItemIndex = 5 || player->boardItemIndex == 15 || player->boardItemIndex == 25 || player->boardItemIndex == 35;
+    bool isRailroad = player->boardItemIndex == 5 || player->boardItemIndex == 15 || player->boardItemIndex == 25 || player->boardItemIndex == 35;
     
+    short rent = prices.rent[numHouses];
+
     if (isRailroad) {
-      unsigned char numRailroadsOwned = boardState->numRailroadsOwned(ownedBy);
-      short rent = 25 * numRailroadsOwned;
+      rent = 25 * (1 << (boardState->numRailroadsOwned(ownedBy) - 1));
     } else if (isUtility) {
       short multiplier = boardState->ownsBothUtilities(ownedBy) ? 10 : 4;
-      //short rent = multiplier * diceRoll;
+      rent = multiplier * player->lastDiceRoll;
     }
-    
-
-    short rent = prices.rent[numHouses];
 
     player->alterBalance(-rent, rentString);
     boardState->players[ownedBy].alterBalance(rent, rentString);
@@ -251,7 +249,7 @@ void Go::drawInitial() {
   wnoutrefresh(win);
 }
 
-Jail::Jail() : BoardItem(0, "Jail", Bottom | Left) {}
+Jail::Jail() : BoardItem(0, "Jail (Just Visiting)", Bottom | Left) {}
 void Jail::drawInitial() {
   wborder(win, 0, 0, 0, 0, ACS_LTEE, ACS_PLUS, 0, ACS_BTEE);
   mvwaddch(win, 0, JAIL_X, ACS_TTEE); // the -2 comes from the border and the fact that we need to get in front of the char
@@ -263,6 +261,14 @@ void Jail::drawInitial() {
   mvwaddstr(win, 2, JAIL_X + 2, "Jail");
   wnoutrefresh(win);
 }
+void Jail::arrestPlayer(Player* player, BoardState* boardState) {
+  cchar_t playerChar;
+  setcchar(&playerChar, L"\uf4ff", 0, player->color, NULL);
+  mvwadd_wch(win, 1, 9 + player->id, &playerChar);
+
+  wnoutrefresh(win);
+}
+
 FreeParking::FreeParking() : BoardItem(0, "Free Parking", Top | Left) {}
 void FreeParking::drawInitial() {
   wborder(win, 0, 0, 0, 0, 0, ACS_TTEE, ACS_LTEE, 0);

@@ -25,6 +25,7 @@ public:
   unsigned char color = 0;
   // Every player starts on go
   unsigned char boardItemIndex = 0;
+  unsigned char lastDiceRoll = 0;
   unsigned char id;
   string name;
   short getBalance() { return balance; }

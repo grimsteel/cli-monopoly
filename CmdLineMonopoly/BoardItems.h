@@ -132,6 +132,7 @@ class Jail : public BoardItem {
 public:
   Jail();
   void drawInitial() override;
+  void arrestPlayer(Player* player, BoardState* boardState);
 };
 
 class FreeParking : public BoardItem {
