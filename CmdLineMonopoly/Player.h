@@ -27,10 +27,12 @@ public:
   unsigned char boardItemIndex = 0;
   unsigned char lastDiceRoll = 0;
   unsigned char id;
+  unsigned char turnsInJail = 0;
   string name;
   short getBalance() { return balance; }
   bool alterBalance(short value, string reason);
   void addProperty(Property* property) { properties.push_back(property); }
+  short getTotalValue();
 private:
   short balance = 0;
   WINDOW* win;

@@ -75,11 +75,13 @@ protected:
 class Property : public BoardItem {
 public:
   struct Prices {
+    // Sell price of the property
+    // Mortage value is half of this
+    // Unmortgage price is 1.1 * mortgage value
     short price;
-    // mortgage price is half of the normal price
-    // unmortgage price is 1.1 * mortgageValue
+    // Price of a single house/hotel
     short buildingPrice;
-    // initial rent, rent for 1-4 houses, and hotel rent
+    // Array of rents: initial rent, rent for 1-4 houses, and hotel rent
     short rent[6];
   };
 
@@ -88,10 +90,10 @@ public:
   Prices prices;
   unsigned char ownedBy = 255; // 0-254 are player IDs, 255 is -1
   unsigned char numHouses = 0; // 5 houses equals 1 hotel
+  unsigned char colorGroup;
   void drawInitial() override;
   void handlePlayer(Player* player, BoardState* mainMenu) override;
 private:
-  unsigned char colorGroup;
   void drawPlayerOwn(Player* player);
 };
 
@@ -117,6 +119,7 @@ public:
     };
     TaxItem(unsigned char index, TaxType type, BoardItemLocation location);
     void drawInitial() override;
+    void handlePlayer(Player* player, BoardState* mainMenu) override;
 private:
     TaxType type;
 };

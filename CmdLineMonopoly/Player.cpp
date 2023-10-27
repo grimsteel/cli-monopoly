@@ -34,6 +34,7 @@ Player::~Player() {
 
 bool Player::alterBalance(short value, string reason) {
   // Check for bankruptcy
+  // TODO: Actually kick player if they go bankrupt
   if (value + balance <= 0) return false;
 
   setBalance(balance + value);
@@ -57,6 +58,14 @@ void Player::setBalance(short newBalance) {
   wclrtoeol(win);
   wattroff(win, COLOR_PAIR(TXT_GREEN));
   wnoutrefresh(win);
+}
+
+short Player::getTotalValue() {
+  short totalValue = 0;
+  for (auto property : properties) {
+    totalValue += property->prices.price + property->numHouses * property->prices.buildingPrice;
+  }
+  return totalValue;
 }
 
 /// @returns Whether another player should be added

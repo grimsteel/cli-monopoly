@@ -151,7 +151,8 @@ void Property::handlePlayer(Player* player, BoardState* boardState) {
     short rent = prices.rent[numHouses];
 
     if (isRailroad) {
-      rent = 25 * (1 << (boardState->numRailroadsOwned(ownedBy) - 1));
+      // Rent for railroads goes 25, 50, 100, 200. Multiply by 2 every time, so it's 25 * (2 ^ (numRailroads - 1))
+      rent = 25 * ( 1 << (boardState->numRailroadsOwned(ownedBy) - 1));
     } else if (isUtility) {
       short multiplier = boardState->ownsBothUtilities(ownedBy) ? 10 : 4;
       rent = multiplier * player->lastDiceRoll;
@@ -233,6 +234,17 @@ void TaxItem::drawInitial() {
 
   wnoutrefresh(win);
 }
+void TaxItem::handlePlayer(Player *player, BoardState *mainMenu) {
+  BoardItem::handlePlayer(player, mainMenu);
+
+  if (type == Income) {
+    short totalValue = player->getTotalValue();
+    short incomeTax = totalValue < 200 ? totalValue / 10 : 200;
+    player->alterBalance(-incomeTax, "Income Tax");
+  } else {
+    player->alterBalance(-75, "Luxury Tax");
+  }
+}
 #pragma endregion
 
 #pragma region Corners
@@ -263,6 +275,7 @@ void Jail::drawInitial() {
 }
 void Jail::arrestPlayer(Player* player, BoardState* boardState) {
   cchar_t playerChar;
+  player->turnsInJail = 0;
   setcchar(&playerChar, L"\uf4ff", 0, player->color, NULL);
   mvwadd_wch(win, 1, 9 + player->id, &playerChar);
 

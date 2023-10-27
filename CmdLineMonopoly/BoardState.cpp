@@ -186,6 +186,8 @@ bool BoardState::doTurn(unsigned char playerId) {
 
   if (player->boardItemIndex == 255) {
     canRollAgain = false;
+    player->turnsInJail++;
+    // TODO: ways of leaving jail - doubles, pay, get out free
 
     drawHeader(playerId, "Jail");
   } else {
@@ -225,8 +227,8 @@ bool BoardState::doTurn(unsigned char playerId) {
           newBoardItemIndex -= NUM_BOARD_ITEMS;
         }
 
-        // If they rolled doubles three times in a row, go to jail
-        if (canRollAgain && numRolls == 3) {
+        // If they rolled doubles three times in a row or landed on "Go to Jail", go to jail. 
+        if ((canRollAgain && numRolls == 3) || newBoardItemIndex == 30) {
           canRollAgain = false;
           newBoardItemIndex = 255; // jail
         }
@@ -248,15 +250,64 @@ bool BoardState::doTurn(unsigned char playerId) {
 
         doupdate();
         break;
+      } case 3: {
+        // List all properties
+        
+        unsigned char selectedProperty = 0;
+        unsigned char selectedLine = 0;
+        constexpr unsigned char numLines = 7;
+        cchar_t propertyDotChar;
+        setcchar(&propertyDotChar, L"\uf10c", A_REVERSE, 0, NULL);
+        cchar_t selectedPropertyDotChar;
+        setcchar(&selectedPropertyDotChar, L"\uf111", A_REVERSE, COLOR_PAIR(properties[0].colorGroup), NULL);
+        
+        wmove(win, 2, 0);
+        wclrtobot(win);
+        wadd_wch(win, &selectedPropertyDotChar);
+        wprintw(win, " %s\n", properties[0].name.c_str());
+        for (int i = 1; i < numLines; i++) {
+          SET_CCHAR_COLOR(propertyDotChar, properties[i].colorGroup);
+          wadd_wch(win, &propertyDotChar);
+          wprintw(win, " %s\n", properties[i].name.c_str());
+        }
+
+        while (true) {
+          wrefresh(win);
+
+          int ch = wgetch(win);
+
+          handleCharInput(ch);
+
+          if (ch == KEY_UP && selectedProperty < sizeof(properties) / sizeof(Property)) {
+            SET_CCHAR_COLOR(propertyDotChar, properties[selectedProperty].colorGroup);
+            mvwadd_wch(win, 2 + selectedLine, 0, &propertyDotChar);
+            selectedProperty++;
+            SET_CCHAR_COLOR(selectedPropertyDotChar, properties[selectedProperty].colorGroup);
+            
+            if (selectedLine < numLines - 1) {
+              selectedLine++;
+              
+              mvwadd_wch(win, 2 + selectedLine, 0, &selectedPropertyDotChar);
+            } else {
+              wmove(win, 2, 0);
+              wdeleteln(win);
+              
+              mvwadd_wch(win, 2 + numLines - 1, 0, &selectedPropertyDotChar);
+              wprintw(win, " %s\n", properties[selectedProperty].name.c_str());
+            }
+          }
+          else if (ch == KEY_ENTER || ch == '\n') {
+            // TODO: Show info
+            break;
+          }
+        }
       } case 4: {
-        goto end_turn;
-      } case 5: {
         return true;
+      } case 5: {
+        return false;
       }
     }
   }
-end_turn:
-  return false;
 }
 
 void BoardState::drawHeader(unsigned char playerId, string location) {
@@ -272,14 +323,15 @@ char BoardState::drawMenu(bool showRollDice) {
   char numMenuItems = showRollDice ? NUM_MENU_ITEMS : NUM_MENU_ITEMS - 1;
 
   wmove(win, 2, 0);
+  wclrtobot(win);
   if (showRollDice) {
     wprintw(win, "  Roll Dice\n");
   }
   wprintw(win, "  Buy Houses/Hotels\n");
   wprintw(win, "  Mortage Properties\n");
   wprintw(win, "  View Property Info\n");
-  wprintw(win, "  End Turn\n");
-  wprintw(win, "  End Game");
+  wprintw(win, "  End Game\n");
+  wprintw(win, "  End Turn");
 
   cchar_t unselectedItemChar;
   cchar_t selectedItemChar;
@@ -292,8 +344,6 @@ char BoardState::drawMenu(bool showRollDice) {
   }
 
   char selectedItem = 0;
-
-  curs_set(FALSE);
 
   while (true) {
     wrefresh(win);
@@ -320,8 +370,6 @@ char BoardState::drawMenu(bool showRollDice) {
       break;
     }
   }
-
-  curs_set(FALSE);
 
   wrefresh(win);
 
