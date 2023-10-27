@@ -121,12 +121,12 @@ bool Player::queryAttributes(BoardState* boardState) {
       if (ch == KEY_RIGHT) {
         // Find the next unused color to the right
         unsigned long mask = ~rotr(usedColors, currentIndex + 1);
-        currentIndex = (currentIndex + 1 + ctz(mask)) % 8;
+        currentIndex = (currentIndex + 1 + ctz(mask)) % NUM_TXT_COLORS;
       } else {
         // Find the next unused color to the left
         // we have to shift it by sizeof(long) - sizeof(char) to move all of the bits to the left, so clz will work
         unsigned long mask = ~(static_cast<unsigned long>(rotl(usedColors, static_cast<unsigned char>(sizeof(usedColors) * 8 - currentIndex))) << (sizeof(unsigned long) * 8 - sizeof(usedColors) * 8));
-        currentIndex = (currentIndex - 1 - clz(mask)) % 8;
+        currentIndex = (currentIndex - 1 - clz(mask)) % NUM_TXT_COLORS;
       }
       x = currentIndex + COLOR_SELECTION_START;
     }
@@ -141,7 +141,7 @@ bool Player::queryAttributes(BoardState* boardState) {
 
   bool addAnother = false;
 
-  if (id < MAX_PLAYERS) {
+  if (id < MAX_PLAYERS - 1) {
     addAnother = showYesNoPrompt(win, boardState, "Add another?", 0, 3);
   }
 

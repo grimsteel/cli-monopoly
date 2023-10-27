@@ -256,17 +256,18 @@ bool BoardState::doTurn(unsigned char playerId) {
         unsigned char selectedProperty = 0;
         unsigned char selectedLine = 0;
         constexpr unsigned char numLines = 7;
+        constexpr unsigned char txtColorOffset = TXT_PURPLE - BGT_PURPLE;
         cchar_t propertyDotChar;
-        setcchar(&propertyDotChar, L"\uf10c", A_REVERSE, 0, NULL);
+        setcchar(&propertyDotChar, L"\uf10c", 0, 0, NULL);
         cchar_t selectedPropertyDotChar;
-        setcchar(&selectedPropertyDotChar, L"\uf111", A_REVERSE, COLOR_PAIR(properties[0].colorGroup), NULL);
+        setcchar(&selectedPropertyDotChar, L"\uf111", 0, COLOR_PAIR(properties[0].colorGroup + txtColorOffset), NULL);
         
         wmove(win, 2, 0);
         wclrtobot(win);
         wadd_wch(win, &selectedPropertyDotChar);
         wprintw(win, " %s\n", properties[0].name.c_str());
         for (int i = 1; i < numLines; i++) {
-          SET_CCHAR_COLOR(propertyDotChar, properties[i].colorGroup);
+          SET_CCHAR_COLOR(propertyDotChar, properties[i].colorGroup + txtColorOffset);
           wadd_wch(win, &propertyDotChar);
           wprintw(win, " %s\n", properties[i].name.c_str());
         }
@@ -278,11 +279,11 @@ bool BoardState::doTurn(unsigned char playerId) {
 
           handleCharInput(ch);
 
-          if (ch == KEY_UP && selectedProperty < sizeof(properties) / sizeof(Property)) {
-            SET_CCHAR_COLOR(propertyDotChar, properties[selectedProperty].colorGroup);
+          if (ch == KEY_DOWN && selectedProperty < sizeof(properties) / sizeof(Property) - 1) {
+            SET_CCHAR_COLOR(propertyDotChar, properties[selectedProperty].colorGroup + txtColorOffset);
             mvwadd_wch(win, 2 + selectedLine, 0, &propertyDotChar);
             selectedProperty++;
-            SET_CCHAR_COLOR(selectedPropertyDotChar, properties[selectedProperty].colorGroup);
+            SET_CCHAR_COLOR(selectedPropertyDotChar, properties[selectedProperty].colorGroup + txtColorOffset);
             
             if (selectedLine < numLines - 1) {
               selectedLine++;
