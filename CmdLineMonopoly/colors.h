@@ -2,6 +2,15 @@
 
 void init_colors();
 
+constexpr int COLOR_PURPLE = 16;
+constexpr int COLOR_LBLUE = 17;
+constexpr int COLOR_PINK = 18;
+constexpr int COLOR_ORANGE = 19;
+constexpr int COLOR_RED_M = 20;
+constexpr int COLOR_YELLOW_M = 21;
+constexpr int COLOR_GREEN_M = 22;
+constexpr int COLOR_BLUE_M = 23;
+
 constexpr int BGT_PURPLE = 1;
 constexpr int BGT_LBLUE = 2;
 constexpr int BGT_PINK = 3;

@@ -139,8 +139,7 @@ void Property::handlePlayer(Player* player, BoardState* boardState) {
       drawPlayerOwn(player);
       wnoutrefresh(win);
     }
-  } else {
-    // TODO: implement different rent calculation
+  } else if (numHouses != 255) { // only if it's not mortgaged
     char rentCString[100];
     snprintf(rentCString, 100, "Rent for %s", name.c_str());
     string rentString(rentCString);

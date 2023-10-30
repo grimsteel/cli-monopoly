@@ -42,9 +42,9 @@ bool Player::alterBalance(short value, string reason) {
   // ncurses does not support mvwdeleteln???
   wmove(win, 3, 0);
   wdeleteln(win);
-  wattron(win, COLOR_PAIR(value > 0 ? TXT_GREEN : TXT_RED) | A_BOLD);
+  wattron(win, COLOR_PAIR(value > 0 ? TXT_GREEN : TXT_RED));
   mvwprintw(win, 5, 0, "%+d (%s)", value, reason.c_str());
-  wattroff(win, COLOR_PAIR(value > 0 ? TXT_GREEN : TXT_RED) | A_BOLD);
+  wattroff(win, COLOR_PAIR(value > 0 ? TXT_GREEN : TXT_RED));
 
   wrefresh(win);
   

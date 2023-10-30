@@ -108,7 +108,7 @@ BoardState::BoardState() : mt(rd()), dice(1, 6),
     &properties[27]
   }
 {
-  win = newwin(10, 75, 1, H_PROPERTY_WIDTH * 2 + V_PROPERTY_WIDTH * PROPERTIES_PER_SIDE + 2);
+  win = newwin(35, 75, 1, H_PROPERTY_WIDTH * 2 + V_PROPERTY_WIDTH * PROPERTIES_PER_SIDE + 2);
   keypad(win, true);
   players.reserve(MAX_PLAYERS);
   wnoutrefresh(stdscr);
@@ -250,27 +250,35 @@ bool BoardState::doTurn(unsigned char playerId) {
 
         doupdate();
         break;
+      } case 1: {
+        // Buy houses
+        break;
       } case 3: {
         // List all properties
         
         unsigned char selectedProperty = 0;
-        unsigned char selectedLine = 0;
-        constexpr unsigned char numLines = 7;
         constexpr unsigned char txtColorOffset = TXT_PURPLE - BGT_PURPLE;
         cchar_t propertyDotChar;
         setcchar(&propertyDotChar, L"\uf10c", 0, 0, NULL);
         cchar_t selectedPropertyDotChar;
-        setcchar(&selectedPropertyDotChar, L"\uf111", 0, COLOR_PAIR(properties[0].colorGroup + txtColorOffset), NULL);
+        setcchar(&selectedPropertyDotChar, L"\uf111", 0, properties[0].colorGroup + txtColorOffset, NULL);
         
+        // Print the header and clear everything else
         wmove(win, 2, 0);
         wclrtobot(win);
+        wattron(win, A_UNDERLINE);
+        waddstr(win, "Choose Property:\n");
+        wattroff(win, A_UNDERLINE);
+
+        // Print the first item (selected) and all the other items
         wadd_wch(win, &selectedPropertyDotChar);
         wprintw(win, " %s\n", properties[0].name.c_str());
-        for (int i = 1; i < numLines; i++) {
+        for (int i = 1; i < sizeof(properties) / sizeof(Property); i++) {
           SET_CCHAR_COLOR(propertyDotChar, properties[i].colorGroup + txtColorOffset);
           wadd_wch(win, &propertyDotChar);
           wprintw(win, " %s\n", properties[i].name.c_str());
         }
+        
 
         while (true) {
           wrefresh(win);
@@ -279,29 +287,54 @@ bool BoardState::doTurn(unsigned char playerId) {
 
           handleCharInput(ch);
 
-          if (ch == KEY_DOWN && selectedProperty < sizeof(properties) / sizeof(Property) - 1) {
+          if (ch == KEY_DOWN || ch == KEY_UP) {
             SET_CCHAR_COLOR(propertyDotChar, properties[selectedProperty].colorGroup + txtColorOffset);
-            mvwadd_wch(win, 2 + selectedLine, 0, &propertyDotChar);
-            selectedProperty++;
+            mvwadd_wch(win, 3 + selectedProperty, 0, &propertyDotChar);
+            // KEY_UP is 1+KEY_DOWN
+            // If they pressed down, it evaluates to 0 * 2 + 1 which is 1.
+            // If they pressed up, it evaluates to -1 * 2 + 1 which is -1
+            selectedProperty += (KEY_DOWN - ch) * 2 + 1;
             SET_CCHAR_COLOR(selectedPropertyDotChar, properties[selectedProperty].colorGroup + txtColorOffset);
-            
-            if (selectedLine < numLines - 1) {
-              selectedLine++;
-              
-              mvwadd_wch(win, 2 + selectedLine, 0, &selectedPropertyDotChar);
-            } else {
-              wmove(win, 2, 0);
-              wdeleteln(win);
-              
-              mvwadd_wch(win, 2 + numLines - 1, 0, &selectedPropertyDotChar);
-              wprintw(win, " %s\n", properties[selectedProperty].name.c_str());
+            mvwadd_wch(win, 3 + selectedProperty, 0, &selectedPropertyDotChar);
+          } else if (ch == KEY_ENTER || ch == '\n') {
+            Property* property = &properties[selectedProperty];
+
+            wattron(win, A_UNDERLINE);
+            mvwadd_wch(win, 2, 0, &selectedPropertyDotChar);
+            wclrtobot(win);
+            wprintw(win, " %s: \n", property->name.c_str());
+            wattroff(win, A_UNDERLINE);
+
+            wprintw(
+              win,
+              "Price: $%d\nMortgage Value: $%d\nBuilding Price: $%d\nRent:\n   $%d\n1  $%d\n2  $%d\n3  $%d\n4  $%d\n   $%d\n",
+              property->prices.price, property->prices.price / 2, property->prices.buildingPrice,
+              property->prices.rent[0], property->prices.rent[1], property->prices.rent[2],
+              property->prices.rent[3], property->prices.rent[4], property->prices.rent[5]
+            );
+            if (property->numHouses == 5) waddstr(win, "Has Hotel\n");
+            else if (property->numHouses == 255) waddstr(win, "Mortgaged\n");
+            else if (property->numHouses > 0) wprintw(win, "%d Houses\n", property->numHouses);
+
+            if (property->ownedBy != 255) {
+              cchar_t ownerChar;
+              setcchar(&ownerChar, L"\uf4ca", 0, players[property->ownedBy].color, NULL);
+              wadd_wch(win, &ownerChar);
+              wprintw(win, " Owned by %s", players[property->ownedBy].name.c_str());
             }
-          }
-          else if (ch == KEY_ENTER || ch == '\n') {
-            // TODO: Show info
+
+            // Print the house icons
+            cchar_t houseChar;
+            setcchar(&houseChar, L"\uf015", 0, 0, NULL);
+            mvwvline_set(win, 8, 1, &houseChar, 4);
+            // Hotel icon (Surrogate pair so capital U)
+            mvwaddwstr(win, 12, 1, L"\U000f02dd");
+            wrefresh(win);
+            wgetch(win);
             break;
           }
         }
+        break;
       } case 4: {
         return true;
       } case 5: {
@@ -382,8 +415,8 @@ bool BoardState::setYesNoPrompt(string prompt) {
   return showYesNoPrompt(win, this, prompt, 0, 2);
 }
 unsigned char BoardState::rollDice() {
-  auto roll1 = 2; // dice(mt);
-  auto roll2 = 2; // dice(mt);
+  auto roll1 = dice(mt);
+  auto roll2 = dice(mt);
 
   // Each roll is from 1 to 6, which can be represented with 3 bits
   // This combines the two rolls into one byte. Roll 1 is the first 3 bytes, roll 2 is the next 3
