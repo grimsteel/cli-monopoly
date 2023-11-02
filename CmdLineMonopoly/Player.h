@@ -33,10 +33,10 @@ public:
   bool alterBalance(short value, string reason);
   void addProperty(Property* property) { properties.push_back(property); }
   short getTotalValue();
+  vector<Property*> properties;
 private:
   short balance = 0;
   WINDOW* win;
   unsigned char static usedColors;
-  vector<Property*> properties;
   void setBalance(short newBalance);
 };

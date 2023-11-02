@@ -252,6 +252,104 @@ bool BoardState::doTurn(unsigned char playerId) {
         break;
       } case 1: {
         // Buy houses
+
+        // Number of properties required for this color group. Only show properties in a color group where this is 0.
+        unsigned char propertiesRequired[] = { 2, 3, 3, 3, 3, 3, 3, 2 };
+
+        // Lowest number of houses in this color group. For instance, if Medit. has 3 houses but Baltic has 4, the 0th element here (c group 1) would be 3.
+        // Therefore, because Medit has an equal # of houses to the value here, you can only buy
+        // Baltic has a higher number, so you can only sell
+        unsigned char colorGroupHouses[] = { 255, 255, 255, 255, 255, 255, 255, 255 };
+
+        // Bitset (one bit per c group) indicating if all properties have the same # of houses, meaning the player can buy & sell on all of them
+        uint8_t allHousesEqual = 0b11111111;
+
+        // Calculate available houses in linear time
+        for (auto currentProperty = player->properties.begin(); currentProperty != player->properties.end(); currentProperty++) {
+          int colorGroup = (*currentProperty)->colorGroup - BGT_PURPLE;
+          propertiesRequired[colorGroup]--;
+
+          // If all three conditions are true, set the allHousesEqual bit to false
+          // 1. The allHousesEqual bit must be true (don't change if it's already false)
+          // 2. The colorGroupHouses item must not be uninitialized (255). If it is, then we're anyway going to set it to the current property houses soon
+          // 3. The current property houses must be different than the colorGroupHouses item
+          if (allHousesEqual | 1 << colorGroup && colorGroupHouses[colorGroup] != 255 && colorGroupHouses[colorGroup] != (*currentProperty)->numHouses) {
+            allHousesEqual &= ~(static_cast<uint8_t>(1 << colorGroup));
+          }
+
+          // If the current property has less houses, set colorGroupHouses
+          if ((*currentProperty)->numHouses < colorGroupHouses[colorGroup]) {
+            colorGroupHouses[colorGroup] = (*currentProperty)->numHouses;
+          }
+        }
+
+        vector<unsigned char> availableProperties;
+        availableProperties.reserve(player->properties.size());
+
+        // Iterate over properties, adding them to availableProperties
+        for (unsigned char currentProperty = 0; currentProperty < player->properties.size(); currentProperty++) {
+          unsigned char colorGroup = player->properties[currentProperty]->colorGroup - BGT_PURPLE;
+          if (propertiesRequired[colorGroup] == 0) {
+            availableProperties.push_back(currentProperty);
+          }
+        }
+
+        availableProperties.shrink_to_fit();
+
+        if (availableProperties.size() == 0) {
+          break;
+        }
+
+        wmove(win, 2, 0);
+        wclrtobot(win);
+        wattron(win, A_UNDERLINE);
+        waddstr(win, "Choose Property:\n");
+        wattroff(win, A_UNDERLINE);
+
+        unsigned char selectedProperty = 0;
+        constexpr unsigned char txtColorOffset = TXT_PURPLE - BGT_PURPLE;
+        cchar_t propertyDotChar;
+        setcchar(&propertyDotChar, L"\uf10c", 0, 0, NULL);
+        cchar_t selectedPropertyDotChar;
+        setcchar(&selectedPropertyDotChar, L"\uf111", 0, player->properties[availableProperties[0]]->colorGroup + txtColorOffset, NULL);
+
+        // Print the first item (selected) and all the other items
+        wadd_wch(win, &selectedPropertyDotChar);
+        wprintw(win, " %s\n", player->properties[availableProperties[0]]->name.c_str());
+        for (vector<unsigned char>::iterator currentProperty = ++availableProperties.begin(); currentProperty != availableProperties.end(); currentProperty++) {
+          SET_CCHAR_COLOR(propertyDotChar, player->properties[*currentProperty]->colorGroup + txtColorOffset);
+          wadd_wch(win, &propertyDotChar);
+          wprintw(win, " %s\n", player->properties[*currentProperty]->name.c_str());
+        }
+
+        // Have the user choose a property
+        while (true) {
+          wrefresh(win);
+
+          int ch = wgetch(win);
+
+          handleCharInput(ch);
+
+          if ((ch == KEY_DOWN && selectedProperty < availableProperties.size() - 1) || (ch == KEY_UP && selectedProperty > 0)) {
+            SET_CCHAR_COLOR(propertyDotChar, player->properties[availableProperties[selectedProperty]]->colorGroup + txtColorOffset);
+            mvwadd_wch(win, 3 + selectedProperty, 0, &propertyDotChar);
+            // KEY_UP is 1+KEY_DOWN
+            // If they pressed down, it evaluates to 0 * 2 + 1 which is 1.
+            // If they pressed up, it evaluates to -1 * 2 + 1 which is -1
+            selectedProperty += (KEY_DOWN - ch) * 2 + 1;
+            SET_CCHAR_COLOR(selectedPropertyDotChar, player->properties[availableProperties[selectedProperty]]->colorGroup + txtColorOffset);
+            mvwadd_wch(win, 3 + selectedProperty, 0, &selectedPropertyDotChar);
+          } else if (ch == KEY_ENTER || ch == '\n') {
+            Property* property = player->properties[availableProperties[selectedProperty]];
+
+            // Prompt whether they would like to buy or sell 1 house
+
+            break;
+          } else if (ch == 033) { // ESC character
+            break;
+          }
+        }
+        
         break;
       } case 3: {
         // List all properties
@@ -287,7 +385,7 @@ bool BoardState::doTurn(unsigned char playerId) {
 
           handleCharInput(ch);
 
-          if (ch == KEY_DOWN || ch == KEY_UP) {
+          if ((ch == KEY_DOWN && selectedProperty < sizeof(properties) / sizeof(Property) - 1) || (ch == KEY_UP && selectedProperty > 0)) {
             SET_CCHAR_COLOR(propertyDotChar, properties[selectedProperty].colorGroup + txtColorOffset);
             mvwadd_wch(win, 3 + selectedProperty, 0, &propertyDotChar);
             // KEY_UP is 1+KEY_DOWN
@@ -331,6 +429,8 @@ bool BoardState::doTurn(unsigned char playerId) {
             mvwaddwstr(win, 12, 1, L"\U000f02dd");
             wrefresh(win);
             wgetch(win);
+            break;
+          } else if (ch == 033) { // ESC character
             break;
           }
         }
@@ -415,8 +515,8 @@ bool BoardState::setYesNoPrompt(string prompt) {
   return showYesNoPrompt(win, this, prompt, 0, 2);
 }
 unsigned char BoardState::rollDice() {
-  auto roll1 = dice(mt);
-  auto roll2 = dice(mt);
+  auto roll1 = 0; // dice(mt);
+  auto roll2 = 1; // dice(mt);
 
   // Each roll is from 1 to 6, which can be represented with 3 bits
   // This combines the two rolls into one byte. Roll 1 is the first 3 bytes, roll 2 is the next 3
