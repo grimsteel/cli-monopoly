@@ -10,7 +10,7 @@
 
 using namespace std;
 
-constexpr char NUM_MENU_ITEMS = 6;
+constexpr char NUM_MENU_ITEMS = 7;
 
 class BoardState
 {
@@ -32,6 +32,8 @@ private:
   mt19937 mt;
   uniform_int_distribution<unsigned short> dice;
   void drawHeader(unsigned char playerId, string location);
+  void drawSubheader(string text);
+  Property* promptChooseProperty(vector<unsigned char> chooseFrom);
   char drawMenu(bool showRollDice);
   /// <returns>Boolean - true if the game should be quit</returns>
   bool doTurn(unsigned char playerId);

@@ -4,6 +4,7 @@
 #include <curses.h>
 #include <string>
 #include <random>
+#include <set>
 #include "BoardItems.h"
 #include "utils.h"
 #include "colors.h"
@@ -13,6 +14,7 @@ using namespace std;
 BoardState::BoardState() : mt(rd()), dice(1, 6),
   // The first strings here are what show up in prompts ("Would you like to buy Baltic Avenue?")
   // The second strings here are what show up on the rendered game board. Because of spacing issues, some of them use abbreviations.
+  // Note that the railroads and utilities do not have rent data, because it's calculated at runtime. Houses also cannot be built on them
   properties {
     Property(0, "Mediterranean Avenue",   " Mediterran ean Avenue", Property::Prices { 60, 50, { 2, 10, 30, 90, 160, 250 } },  BGT_PURPLE,  BoardItem::Bottom),
     Property(2, "Baltic Avenue",          "   Baltic     Avenue  ", Property::Prices { 60, 50, { 4, 20, 60, 180, 320, 450 } },  BGT_PURPLE,  BoardItem::Bottom),
@@ -269,7 +271,7 @@ bool BoardState::doTurn(unsigned char playerId) {
           int colorGroup = (*currentProperty)->colorGroup - BGT_PURPLE;
           propertiesRequired[colorGroup]--;
 
-          // If all three conditions are true, set the allHousesEqual bit to false
+          /*// If all three conditions are true, set the allHousesEqual bit to false
           // 1. The allHousesEqual bit must be true (don't change if it's already false)
           // 2. The colorGroupHouses item must not be uninitialized (255). If it is, then we're anyway going to set it to the current property houses soon
           // 3. The current property houses must be different than the colorGroupHouses item
@@ -280,17 +282,24 @@ bool BoardState::doTurn(unsigned char playerId) {
           // If the current property has less houses, set colorGroupHouses
           if ((*currentProperty)->numHouses < colorGroupHouses[colorGroup]) {
             colorGroupHouses[colorGroup] = (*currentProperty)->numHouses;
-          }
+          }*/
         }
 
-        vector<unsigned char> availableProperties;
-        availableProperties.reserve(player->properties.size());
+        vector<unsigned char> availableColorGroups;
+        availableColorGroups.reserve(sizeof(propertiesRequired) / sizeof(unsigned char));
+        for (int i = 0; i < sizeof(propertiesRequired) / sizeof(unsigned char); i++) {
+          if (propertiesRequired[i] == 0) availableColorGroups.push_back(i);
+        }
+        availableColorGroups.shrink_to_fit();
+
+        /*vector<Property*> availableProperties;
+        availableProperties.reserve(player->properties.size() / 2); // guesstimation
 
         // Iterate over properties, adding them to availableProperties
-        for (unsigned char currentProperty = 0; currentProperty < player->properties.size(); currentProperty++) {
-          unsigned char colorGroup = player->properties[currentProperty]->colorGroup - BGT_PURPLE;
+        for (vector<Property*>::iterator currentProperty = player->properties.begin(); currentProperty != player->properties.end(); ++currentProperty) {
+          unsigned char colorGroup = (*currentProperty)->colorGroup - BGT_PURPLE;
           if (propertiesRequired[colorGroup] == 0) {
-            availableProperties.push_back(currentProperty);
+            availableProperties.push_back(*currentProperty);
           }
         }
 
@@ -298,146 +307,57 @@ bool BoardState::doTurn(unsigned char playerId) {
 
         if (availableProperties.size() == 0) {
           break;
-        }
+        }*/
 
-        wmove(win, 2, 0);
-        wclrtobot(win);
-        wattron(win, A_UNDERLINE);
-        waddstr(win, "Choose Property:\n");
-        wattroff(win, A_UNDERLINE);
-
-        unsigned char selectedProperty = 0;
-        constexpr unsigned char txtColorOffset = TXT_PURPLE - BGT_PURPLE;
-        cchar_t propertyDotChar;
-        setcchar(&propertyDotChar, L"\uf10c", 0, 0, NULL);
-        cchar_t selectedPropertyDotChar;
-        setcchar(&selectedPropertyDotChar, L"\uf111", 0, player->properties[availableProperties[0]]->colorGroup + txtColorOffset, NULL);
-
-        // Print the first item (selected) and all the other items
-        wadd_wch(win, &selectedPropertyDotChar);
-        wprintw(win, " %s\n", player->properties[availableProperties[0]]->name.c_str());
-        for (vector<unsigned char>::iterator currentProperty = ++availableProperties.begin(); currentProperty != availableProperties.end(); currentProperty++) {
-          SET_CCHAR_COLOR(propertyDotChar, player->properties[*currentProperty]->colorGroup + txtColorOffset);
-          wadd_wch(win, &propertyDotChar);
-          wprintw(win, " %s\n", player->properties[*currentProperty]->name.c_str());
-        }
-
-        // Have the user choose a property
-        while (true) {
-          wrefresh(win);
-
-          int ch = wgetch(win);
-
-          handleCharInput(ch);
-
-          if ((ch == KEY_DOWN && selectedProperty < availableProperties.size() - 1) || (ch == KEY_UP && selectedProperty > 0)) {
-            SET_CCHAR_COLOR(propertyDotChar, player->properties[availableProperties[selectedProperty]]->colorGroup + txtColorOffset);
-            mvwadd_wch(win, 3 + selectedProperty, 0, &propertyDotChar);
-            // KEY_UP is 1+KEY_DOWN
-            // If they pressed down, it evaluates to 0 * 2 + 1 which is 1.
-            // If they pressed up, it evaluates to -1 * 2 + 1 which is -1
-            selectedProperty += (KEY_DOWN - ch) * 2 + 1;
-            SET_CCHAR_COLOR(selectedPropertyDotChar, player->properties[availableProperties[selectedProperty]]->colorGroup + txtColorOffset);
-            mvwadd_wch(win, 3 + selectedProperty, 0, &selectedPropertyDotChar);
-          } else if (ch == KEY_ENTER || ch == '\n') {
-            Property* property = player->properties[availableProperties[selectedProperty]];
-
-            // Prompt whether they would like to buy or sell 1 house
-
-            break;
-          } else if (ch == 033) { // ESC character
-            break;
-          }
-        }
+        Property* chosenProperty = promptChooseProperty(availableColorGroups);
+        if (chosenProperty == NULL) break;
         
-        break;
-      } case 3: {
-        // List all properties
-        
-        unsigned char selectedProperty = 0;
-        constexpr unsigned char txtColorOffset = TXT_PURPLE - BGT_PURPLE;
-        cchar_t propertyDotChar;
-        setcchar(&propertyDotChar, L"\uf10c", 0, 0, NULL);
-        cchar_t selectedPropertyDotChar;
-        setcchar(&selectedPropertyDotChar, L"\uf111", 0, properties[0].colorGroup + txtColorOffset, NULL);
-        
-        // Print the header and clear everything else
-        wmove(win, 2, 0);
-        wclrtobot(win);
-        wattron(win, A_UNDERLINE);
-        waddstr(win, "Choose Property:\n");
-        wattroff(win, A_UNDERLINE);
-
-        // Print the first item (selected) and all the other items
-        wadd_wch(win, &selectedPropertyDotChar);
-        wprintw(win, " %s\n", properties[0].name.c_str());
-        for (int i = 1; i < sizeof(properties) / sizeof(Property); i++) {
-          SET_CCHAR_COLOR(propertyDotChar, properties[i].colorGroup + txtColorOffset);
-          wadd_wch(win, &propertyDotChar);
-          wprintw(win, " %s\n", properties[i].name.c_str());
-        }
-        
-
-        while (true) {
-          wrefresh(win);
-
-          int ch = wgetch(win);
-
-          handleCharInput(ch);
-
-          if ((ch == KEY_DOWN && selectedProperty < sizeof(properties) / sizeof(Property) - 1) || (ch == KEY_UP && selectedProperty > 0)) {
-            SET_CCHAR_COLOR(propertyDotChar, properties[selectedProperty].colorGroup + txtColorOffset);
-            mvwadd_wch(win, 3 + selectedProperty, 0, &propertyDotChar);
-            // KEY_UP is 1+KEY_DOWN
-            // If they pressed down, it evaluates to 0 * 2 + 1 which is 1.
-            // If they pressed up, it evaluates to -1 * 2 + 1 which is -1
-            selectedProperty += (KEY_DOWN - ch) * 2 + 1;
-            SET_CCHAR_COLOR(selectedPropertyDotChar, properties[selectedProperty].colorGroup + txtColorOffset);
-            mvwadd_wch(win, 3 + selectedProperty, 0, &selectedPropertyDotChar);
-          } else if (ch == KEY_ENTER || ch == '\n') {
-            Property* property = &properties[selectedProperty];
-
-            wattron(win, A_UNDERLINE);
-            mvwadd_wch(win, 2, 0, &selectedPropertyDotChar);
-            wclrtobot(win);
-            wprintw(win, " %s: \n", property->name.c_str());
-            wattroff(win, A_UNDERLINE);
-
-            wprintw(
-              win,
-              "Price: $%d\nMortgage Value: $%d\nBuilding Price: $%d\nRent:\n   $%d\n1  $%d\n2  $%d\n3  $%d\n4  $%d\n   $%d\n",
-              property->prices.price, property->prices.price / 2, property->prices.buildingPrice,
-              property->prices.rent[0], property->prices.rent[1], property->prices.rent[2],
-              property->prices.rent[3], property->prices.rent[4], property->prices.rent[5]
-            );
-            if (property->numHouses == 5) waddstr(win, "Has Hotel\n");
-            else if (property->numHouses == 255) waddstr(win, "Mortgaged\n");
-            else if (property->numHouses > 0) wprintw(win, "%d Houses\n", property->numHouses);
-
-            if (property->ownedBy != 255) {
-              cchar_t ownerChar;
-              setcchar(&ownerChar, L"\uf4ca", 0, players[property->ownedBy].color, NULL);
-              wadd_wch(win, &ownerChar);
-              wprintw(win, " Owned by %s", players[property->ownedBy].name.c_str());
-            }
-
-            // Print the house icons
-            cchar_t houseChar;
-            setcchar(&houseChar, L"\uf015", 0, 0, NULL);
-            mvwvline_set(win, 8, 1, &houseChar, 4);
-            // Hotel icon (Surrogate pair so capital U)
-            mvwaddwstr(win, 12, 1, L"\U000f02dd");
-            wrefresh(win);
-            wgetch(win);
-            break;
-          } else if (ch == 033) { // ESC character
-            break;
-          }
-        }
+        // Prompt whether they would like to buy or sell 1 house
         break;
       } case 4: {
-        return true;
+        // List all properties
+
+        //vector<Property*> displayProperties(sizeof(properties) / sizeof(Property));
+        //for (int i = 0; i < sizeof(properties) / sizeof(Property); i++) {
+        //  displayProperties[i] = &properties[i];
+        //}
+        
+        Property* selectedProperty = promptChooseProperty({ 0, 1, 2, 3, 4, 5, 6, 7 }); // all color Groups
+        if (selectedProperty == NULL) break;
+        
+        // Show the property details
+        drawSubheader(selectedProperty->name);
+
+        wprintw(
+          win,
+          "Price: $%d\nMortgage Value: $%d\nBuilding Price: $%d\nRent:\n   $%d\n1  $%d\n2  $%d\n3  $%d\n4  $%d\n   $%d\n",
+          selectedProperty->prices.price, selectedProperty->prices.price / 2, selectedProperty->prices.buildingPrice,
+          selectedProperty->prices.rent[0], selectedProperty->prices.rent[1], selectedProperty->prices.rent[2],
+          selectedProperty->prices.rent[3], selectedProperty->prices.rent[4], selectedProperty->prices.rent[5]
+        );
+        if (selectedProperty->numHouses == 5) waddstr(win, "Has Hotel\n");
+        else if (selectedProperty->numHouses == 255) waddstr(win, "Mortgaged\n");
+        else if (selectedProperty->numHouses > 0) wprintw(win, "%d Houses\n", selectedProperty->numHouses);
+
+        if (selectedProperty->ownedBy != 255) {
+          cchar_t ownerChar;
+          setcchar(&ownerChar, L"\uf4ca", 0, players[selectedProperty->ownedBy].color, NULL);
+          wadd_wch(win, &ownerChar);
+          wprintw(win, " Owned by %s", players[selectedProperty->ownedBy].name.c_str());
+        }
+
+        // Print the house icons
+        cchar_t houseChar;
+        setcchar(&houseChar, L"\uf015", 0, 0, NULL);
+        mvwvline_set(win, 8, 1, &houseChar, 4);
+        // Hotel icon (Surrogate pair so capital U)
+        mvwaddwstr(win, 12, 1, L"\U000f02dd");
+        wrefresh(win);
+        wgetch(win);
+        break;
       } case 5: {
+        return true;
+      } case 6: {
         return false;
       }
     }
@@ -453,6 +373,75 @@ void BoardState::drawHeader(unsigned char playerId, string location) {
   wclrtobot(win);
 }
 
+/// Print the header and clear everything else
+void BoardState::drawSubheader(string text) {
+  wmove(win, 2, 0);
+  wclrtobot(win);
+  wattron(win, A_UNDERLINE);
+  wprintw(win, "%s:\n", text.c_str());
+  wattroff(win, A_UNDERLINE);
+}
+
+Property* BoardState::promptChooseProperty(vector<unsigned char> colorGroups) {
+  constexpr unsigned char txtColorOffset = TXT_PURPLE;
+
+  constexpr const char* colorGroupNames[] = { "Purple", "Light Blue", "Pink", "Orange", "Red", "Yellow", "Green", "Blue" };
+  constexpr unsigned char propertyOffsets[] = { 0, 3, 6, 11, 14, 18, 22, 26 }; // indices of the first properties in each color group
+
+  drawSubheader("Select Color Group");
+
+  cchar_t propertyDotChar;
+  setcchar(&propertyDotChar, L"\uf10c", 0, 0, NULL);
+  cchar_t selectedPropertyDotChar;
+  setcchar(&selectedPropertyDotChar, L"\uf111", 0, colorGroups[0] + txtColorOffset, NULL);
+
+  unsigned char selectedColorGroup = 0;
+
+  // Print the first item (selected) and all the other items
+  wadd_wch(win, &selectedPropertyDotChar);
+  wprintw(win, " %s\n", colorGroupNames[0]);
+  for (vector<unsigned char>::iterator colorGroup = ++colorGroups.begin(); colorGroup != colorGroups.end(); colorGroup++) {
+    SET_CCHAR_COLOR(propertyDotChar, *colorGroup + txtColorOffset);
+    wadd_wch(win, &propertyDotChar);
+    wprintw(win, " %s\n", colorGroupNames[*colorGroup]);
+  }
+
+  // Have the user choose a color group
+  while (true) {
+    wrefresh(win);
+
+    int ch = wgetch(win);
+
+    handleCharInput(ch);
+
+    if ((ch == KEY_DOWN && selectedColorGroup < colorGroups.size() - 1) || (ch == KEY_UP && selectedColorGroup > 0)) {
+      SET_CCHAR_COLOR(propertyDotChar, colorGroups[selectedColorGroup] + txtColorOffset);
+      mvwadd_wch(win, 3 + selectedColorGroup, 0, &propertyDotChar);
+      // KEY_UP is 1+KEY_DOWN
+      // If they pressed down, it evaluates to 0 * 2 + 1 which is 1.
+      // If they pressed up, it evaluates to -1 * 2 + 1 which is -1
+      selectedColorGroup += (KEY_DOWN - ch) * 2 + 1;
+      SET_CCHAR_COLOR(selectedPropertyDotChar, colorGroups[selectedColorGroup] + txtColorOffset);
+      mvwadd_wch(win, 3 + selectedColorGroup, 0, &selectedPropertyDotChar);
+    }
+    else if (ch == KEY_ENTER || ch == '\n') {
+      // Next, prompt for a property
+      drawSubheader("Select Property");
+      unsigned char offset = propertyOffsets[colorGroups[selectedColorGroup]];
+      // Loop until we reach a property of a different color group
+      for (unsigned char i = offset; properties[i].colorGroup - BGT_PURPLE != colorGroups[selectedColorGroup]; i++) {
+        wprintw(win, "%s\n", properties[i].name);
+        if (properties[i + 1].colorGroup == BGT_BLACK) i++; // skip over utilities
+      }
+
+      break;
+    }
+    else if (ch == 033) { // ESC character
+      return NULL;
+    }
+  }
+}
+
 char BoardState::drawMenu(bool showRollDice) {
   char numMenuItems = showRollDice ? NUM_MENU_ITEMS : NUM_MENU_ITEMS - 1;
 
@@ -462,6 +451,7 @@ char BoardState::drawMenu(bool showRollDice) {
     wprintw(win, "  Roll Dice\n");
   }
   wprintw(win, "  Buy Houses/Hotels\n");
+  wprintw(win, "  Sell Houses/Hotels\n");
   wprintw(win, "  Mortage Properties\n");
   wprintw(win, "  View Property Info\n");
   wprintw(win, "  End Game\n");
