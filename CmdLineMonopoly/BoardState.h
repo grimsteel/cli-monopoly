@@ -10,7 +10,7 @@
 
 using namespace std;
 
-constexpr char NUM_MENU_ITEMS = 7;
+constexpr char NUM_MENU_ITEMS = 6;
 
 class BoardState
 {
@@ -33,7 +33,7 @@ private:
   uniform_int_distribution<unsigned short> dice;
   void drawHeader(unsigned char playerId, string location);
   void drawSubheader(string text);
-  Property* promptChooseProperty(vector<unsigned char> chooseFrom);
+  Property* promptChooseProperty(vector<unsigned char> chooseFrom, bool onlyPrintProperties);
   /// <summary>
   /// Evaluate the input for navigating a list
   /// </summary>

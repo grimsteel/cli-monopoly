@@ -292,6 +292,8 @@ bool BoardState::doTurn(unsigned char playerId) {
         }
         availableColorGroups.shrink_to_fit();
 
+        if (availableColorGroups.size() == 0) break;
+
         /*vector<Property*> availableProperties;
         availableProperties.reserve(player->properties.size() / 2); // guesstimation
 
@@ -309,12 +311,17 @@ bool BoardState::doTurn(unsigned char playerId) {
           break;
         }*/
 
-        Property* chosenProperty = promptChooseProperty(availableColorGroups);
-        if (chosenProperty == NULL) break;
+        Property* firstProperty = promptChooseProperty(availableColorGroups, true);
+        if (firstProperty == NULL) break;
+
+        unsigned char colorGroup = firstProperty->colorGroup;
+        unsigned char numProperties = getcury(win) - 3;
+
+        wgetch(win);
         
         // Prompt whether they would like to buy or sell 1 house
         break;
-      } case 4: {
+      } case 3: {
         // List all properties
 
         //vector<Property*> displayProperties(sizeof(properties) / sizeof(Property));
@@ -322,9 +329,9 @@ bool BoardState::doTurn(unsigned char playerId) {
         //  displayProperties[i] = &properties[i];
         //}
         
-        Property* selectedProperty = promptChooseProperty({ 0, 1, 2, 3, 4, 5, 6, 7 }); // all color Groups
+        Property* selectedProperty = promptChooseProperty({ 0, 1, 2, 3, 4, 5, 6, 7 }, false); // all color Groups
         if (selectedProperty == NULL) break;
-        
+
         // Show the property details
         drawSubheader(selectedProperty->name);
 
@@ -355,9 +362,9 @@ bool BoardState::doTurn(unsigned char playerId) {
         wrefresh(win);
         wgetch(win);
         break;
-      } case 5: {
+      } case 4: {
         return true;
-      } case 6: {
+      } case 5: {
         return false;
       }
     }
@@ -382,7 +389,7 @@ void BoardState::drawSubheader(string text) {
   wattroff(win, A_UNDERLINE);
 }
 
-Property* BoardState::promptChooseProperty(vector<unsigned char> colorGroups) {
+Property* BoardState::promptChooseProperty(vector<unsigned char> colorGroups, bool onlyPrintProperties) {
   constexpr unsigned char txtColorOffset = TXT_PURPLE;
 
   constexpr const char* colorGroupNames[] = { "Purple", "Light Blue", "Pink", "Orange", "Red", "Yellow", "Green", "Blue" };
@@ -430,26 +437,32 @@ Property* BoardState::promptChooseProperty(vector<unsigned char> colorGroups) {
         if (properties[i + 1].colorGroup == BGT_BLACK) i++; // skip over utilities
       }
 
+      if (onlyPrintProperties) {
+        return &properties[offset];
+      }
+
       mvwadd_wch(win, 3, 0, &selectedPropertyDotChar);
 
       unsigned char selectedProperty = 0;
 
       while (true) {
-        int subResult = navigateList(j - 1, selectedProperty);
+        int subResult = navigateList(j, selectedProperty);
         if (subResult == 2) return NULL;
         else if (subResult == 0) return &properties[colorGroupProperties[selectedProperty]];
+        else if (subResult == -1 || subResult == 1) {
+          mvwadd_wch(win, 3 + selectedProperty, 0, &propertyDotChar);
+          selectedProperty += subResult;
+          mvwadd_wch(win, 3 + selectedProperty, 0, &selectedPropertyDotChar);
+        }
       }
 
       wgetch(win);
 
       break;
     // Up/down
-    } else if (result != -2) {
+    } else if (result == -1 || result == 1) {
       SET_CCHAR_COLOR(propertyDotChar, colorGroups[selectedColorGroup] + txtColorOffset);
       mvwadd_wch(win, 3 + selectedColorGroup, 0, &propertyDotChar);
-      // KEY_UP is 1+KEY_DOWN
-      // If they pressed down, it evaluates to 0 * 2 + 1 which is 1.
-      // If they pressed up, it evaluates to -1 * 2 + 1 which is -1
       selectedColorGroup += result;
       SET_CCHAR_COLOR(selectedPropertyDotChar, colorGroups[selectedColorGroup] + txtColorOffset);
       mvwadd_wch(win, 3 + selectedColorGroup, 0, &selectedPropertyDotChar);
@@ -474,7 +487,7 @@ int BoardState::navigateList(unsigned char maxItems, unsigned char currentItem) 
   } else if (ch == 033) { // ESC character
     return 2;
   } else {
-    return -2;
+    return ch; // return the actual character code
   }
 }
 
@@ -486,8 +499,7 @@ char BoardState::drawMenu(bool showRollDice) {
   if (showRollDice) {
     wprintw(win, "  Roll Dice\n");
   }
-  wprintw(win, "  Buy Houses/Hotels\n");
-  wprintw(win, "  Sell Houses/Hotels\n");
+  wprintw(win, "  Manage Houses/Hotels\n");
   wprintw(win, "  Mortage Properties\n");
   wprintw(win, "  View Property Info\n");
   wprintw(win, "  End Game\n");
