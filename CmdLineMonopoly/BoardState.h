@@ -33,7 +33,7 @@ private:
   uniform_int_distribution<unsigned short> dice;
   void drawHeader(unsigned char playerId, string location);
   void drawSubheader(string text);
-  Property* promptChooseProperty(vector<unsigned char> chooseFrom, bool onlyPrintProperties);
+  vector<Property*> promptChooseProperty(vector<unsigned char> chooseFrom, bool onlyPrintProperties);
   /// <summary>
   /// Evaluate the input for navigating a list
   /// </summary>

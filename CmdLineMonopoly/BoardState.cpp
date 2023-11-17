@@ -311,13 +311,38 @@ bool BoardState::doTurn(unsigned char playerId) {
           break;
         }*/
 
-        Property* firstProperty = promptChooseProperty(availableColorGroups, true);
-        if (firstProperty == NULL) break;
+        vector<Property*> colorGroupProperties = promptChooseProperty(availableColorGroups, true);
+        if (colorGroupProperties.size() == 0) break;
 
-        unsigned char colorGroup = firstProperty->colorGroup;
-        unsigned char numProperties = getcury(win) - 3;
+        unsigned char colorGroup = colorGroupProperties[0]->colorGroup;
+        cchar_t propertyDotChar;
+        setcchar(&propertyDotChar, L"\uf10c", 0, 0, NULL);
+        cchar_t selectedPropertyDotChar;
+        setcchar(&selectedPropertyDotChar, L"\uf111", 0, colorGroup + TXT_PURPLE, NULL);
 
-        wgetch(win);
+        unsigned char selectedProperty = 0;
+
+        while (true) {
+          // j is now the number of properties we found
+          int result = navigateList(colorGroupProperties.size(), selectedProperty);
+          if (result == 2) break;
+          else if (result == 0) {
+            // Make sure what they have done is valid, commit changes, and break
+            break;
+          }
+          // Up/down
+          else if (result == -1 || result == 1) {
+            mvwadd_wch(win, 3 + selectedProperty, 0, &propertyDotChar);
+            selectedProperty += result;
+            mvwadd_wch(win, 3 + selectedProperty, 0, &selectedPropertyDotChar);
+          }
+          // Left/Right
+          else if (result == -3 || result == 3) {
+            mvwadd_wch(win, 3 + selectedProperty, 0, &propertyDotChar);
+            selectedProperty += result;
+            mvwadd_wch(win, 3 + selectedProperty, 0, &selectedPropertyDotChar);
+          }
+        }
         
         // Prompt whether they would like to buy or sell 1 house
         break;
@@ -329,8 +354,9 @@ bool BoardState::doTurn(unsigned char playerId) {
         //  displayProperties[i] = &properties[i];
         //}
         
-        Property* selectedProperty = promptChooseProperty({ 0, 1, 2, 3, 4, 5, 6, 7 }, false); // all color Groups
-        if (selectedProperty == NULL) break;
+        vector<Property*> selectedProperties = promptChooseProperty({ 0, 1, 2, 3, 4, 5, 6, 7 }, false); // all color Groups
+        if (selectedProperties.size() == 0) break;
+        Property* selectedProperty = selectedProperties[0];
 
         // Show the property details
         drawSubheader(selectedProperty->name);
@@ -389,7 +415,7 @@ void BoardState::drawSubheader(string text) {
   wattroff(win, A_UNDERLINE);
 }
 
-Property* BoardState::promptChooseProperty(vector<unsigned char> colorGroups, bool onlyPrintProperties) {
+vector<Property*> BoardState::promptChooseProperty(vector<unsigned char> colorGroups, bool onlyPrintProperties) {
   constexpr unsigned char txtColorOffset = TXT_PURPLE;
 
   constexpr const char* colorGroupNames[] = { "Purple", "Light Blue", "Pink", "Orange", "Red", "Yellow", "Green", "Blue" };
@@ -413,19 +439,24 @@ Property* BoardState::promptChooseProperty(vector<unsigned char> colorGroups, bo
 
   mvwadd_wch(win, 3, 0, &selectedPropertyDotChar);
 
+  // At most three elements
+  vector<Property*> resultProperties;
+
   // Have the user choose a color group
   while (true) {
     int result = navigateList(static_cast<unsigned char>(colorGroups.size()), selectedColorGroup);
     // Cancel
-    if (result == 2) return NULL;
+    if (result == 2) break;
     // Confirm
     else if (result == 0) {
       // Next, prompt for a property
       drawSubheader("Select Property");
       unsigned char offset = propertyOffsets[colorGroups[selectedColorGroup]];
 
-      unsigned char colorGroupProperties[3] = { 255, 255, 255 };
       SET_CCHAR_COLOR(propertyDotChar, colorGroups[selectedColorGroup] + txtColorOffset);
+      vector<Property*> colorGroupProperties;
+      colorGroupProperties.reserve(3);
+
 
       // Render a list of all of the properties
       // Loop until we reach a property of a different color group
@@ -433,12 +464,12 @@ Property* BoardState::promptChooseProperty(vector<unsigned char> colorGroups, bo
       for (unsigned char i = offset; properties[i].colorGroup - BGT_PURPLE == colorGroups[selectedColorGroup]; i++, j++) {
         wadd_wch(win, &propertyDotChar);
         wprintw(win, " %s\n", properties[i].name.c_str());
-        colorGroupProperties[j] = i;
+        colorGroupProperties.push_back(&properties[i]);
         if (properties[i + 1].colorGroup == BGT_BLACK) i++; // skip over utilities
       }
 
       if (onlyPrintProperties) {
-        return &properties[offset];
+        return colorGroupProperties;
       }
 
       mvwadd_wch(win, 3, 0, &selectedPropertyDotChar);
@@ -446,9 +477,14 @@ Property* BoardState::promptChooseProperty(vector<unsigned char> colorGroups, bo
       unsigned char selectedProperty = 0;
 
       while (true) {
+        // j is now the number of properties we found
         int subResult = navigateList(j, selectedProperty);
-        if (subResult == 2) return NULL;
-        else if (subResult == 0) return &properties[colorGroupProperties[selectedProperty]];
+        if (subResult == 2) goto end;
+        else if (subResult == 0) {
+          // Add the resulting property and exit;
+          resultProperties.push_back(colorGroupProperties[selectedProperty]);
+          goto end;
+        }
         else if (subResult == -1 || subResult == 1) {
           mvwadd_wch(win, 3 + selectedProperty, 0, &propertyDotChar);
           selectedProperty += subResult;
@@ -468,6 +504,7 @@ Property* BoardState::promptChooseProperty(vector<unsigned char> colorGroups, bo
       mvwadd_wch(win, 3 + selectedColorGroup, 0, &selectedPropertyDotChar);
     }
   }
+end: return resultProperties;
 }
 
 int BoardState::navigateList(unsigned char maxItems, unsigned char currentItem) {
@@ -482,7 +519,11 @@ int BoardState::navigateList(unsigned char maxItems, unsigned char currentItem) 
     // If they pressed down, it evaluates to 0 * 2 + 1 which is 1.
     // If they pressed up, it evaluates to -1 * 2 + 1 which is -1
     return (KEY_DOWN - ch) * 2 + 1;
-  } else if (ch == KEY_ENTER || ch == '\n') {
+  }
+  else if (ch == KEY_LEFT || ch == KEY_RIGHT) {
+    return (KEY_LEFT - ch) * 2 + 1;
+  }
+  else if (ch == KEY_ENTER || ch == '\n') {
     return 0;
   } else if (ch == 033) { // ESC character
     return 2;
