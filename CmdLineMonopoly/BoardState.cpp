@@ -316,31 +316,50 @@ bool BoardState::doTurn(unsigned char playerId) {
 
         unsigned char colorGroup = colorGroupProperties[0]->colorGroup;
         cchar_t propertyDotChar;
-        setcchar(&propertyDotChar, L"\uf10c", 0, 0, NULL);
+        setcchar(&propertyDotChar, L"\uf10c", 0, colorGroup + TXT_PURPLE - BGT_PURPLE, NULL);
         cchar_t selectedPropertyDotChar;
-        setcchar(&selectedPropertyDotChar, L"\uf111", 0, colorGroup + TXT_PURPLE, NULL);
+        setcchar(&selectedPropertyDotChar, L"\uf111", 0, colorGroup + TXT_PURPLE - BGT_PURPLE, NULL);
 
         unsigned char selectedProperty = 0;
+        vector<unsigned char> newHouses(colorGroupProperties.size());
+
+        for (int i = 0; i < colorGroupProperties.size(); i++) {
+          newHouses[i] = colorGroupProperties[i]->numHouses;
+        }
 
         while (true) {
+          for (int i = 0; i < newHouses.size(); i++) {
+            wmove(win, 3 + i, 30);
+            wclrtoeol(win);
+            int houses = newHouses[i];
+            if (houses >= 1 && houses <= 4) {
+              cchar_t houseChar;
+              setcchar(&houseChar, L"\uf015", 0, TXT_GREEN, NULL);
+              mvwhline_set(win, 3 + i, 30, &houseChar, houses);
+            }
+            else if (houses == 5) {
+              mvwaddwstr(win, 3 + i, 30, L"\U000f02dd");
+            }
+          }
+
           // j is now the number of properties we found
-          int result = navigateList(colorGroupProperties.size(), selectedProperty);
-          if (result == 2) break;
-          else if (result == 0) {
+          NavigateListResult result = navigateList(static_cast<unsigned char>(colorGroupProperties.size()), selectedProperty);
+          if (result == NavigateListResult::Cancel) break;
+          else if (result == NavigateListResult::Confirm) {
             // Make sure what they have done is valid, commit changes, and break
             break;
           }
           // Up/down
-          else if (result == -1 || result == 1) {
+          else if (result == NavigateListResult::Up || result == NavigateListResult::Down) {
             mvwadd_wch(win, 3 + selectedProperty, 0, &propertyDotChar);
             selectedProperty += result;
             mvwadd_wch(win, 3 + selectedProperty, 0, &selectedPropertyDotChar);
           }
           // Left/Right
-          else if (result == -3 || result == 3) {
-            mvwadd_wch(win, 3 + selectedProperty, 0, &propertyDotChar);
-            selectedProperty += result;
-            mvwadd_wch(win, 3 + selectedProperty, 0, &selectedPropertyDotChar);
+          else if (result == NavigateListResult::Left && newHouses[selectedProperty] > 0) {
+            newHouses[selectedProperty]--;
+          } else if (result == NavigateListResult::Right && newHouses[selectedProperty] < 5) {
+            newHouses[selectedProperty]++;
           }
         }
         
@@ -444,11 +463,11 @@ vector<Property*> BoardState::promptChooseProperty(vector<unsigned char> colorGr
 
   // Have the user choose a color group
   while (true) {
-    int result = navigateList(static_cast<unsigned char>(colorGroups.size()), selectedColorGroup);
+    NavigateListResult result = navigateList(static_cast<unsigned char>(colorGroups.size()), selectedColorGroup);
     // Cancel
-    if (result == 2) break;
+    if (result == NavigateListResult::Cancel) break;
     // Confirm
-    else if (result == 0) {
+    else if (result == NavigateListResult::Confirm) {
       // Next, prompt for a property
       drawSubheader("Select Property");
       unsigned char offset = propertyOffsets[colorGroups[selectedColorGroup]];
@@ -468,26 +487,26 @@ vector<Property*> BoardState::promptChooseProperty(vector<unsigned char> colorGr
         if (properties[i + 1].colorGroup == BGT_BLACK) i++; // skip over utilities
       }
 
+      mvwadd_wch(win, 3, 0, &selectedPropertyDotChar);
+
       if (onlyPrintProperties) {
         return colorGroupProperties;
       }
-
-      mvwadd_wch(win, 3, 0, &selectedPropertyDotChar);
 
       unsigned char selectedProperty = 0;
 
       while (true) {
         // j is now the number of properties we found
-        int subResult = navigateList(j, selectedProperty);
-        if (subResult == 2) goto end;
-        else if (subResult == 0) {
+        NavigateListResult subResult = navigateList(j, selectedProperty);
+        if (subResult == NavigateListResult::Cancel) goto end;
+        else if (subResult == NavigateListResult::Confirm) {
           // Add the resulting property and exit;
           resultProperties.push_back(colorGroupProperties[selectedProperty]);
           goto end;
         }
-        else if (subResult == -1 || subResult == 1) {
+        else if (subResult == NavigateListResult::Up || subResult == NavigateListResult::Down) {
           mvwadd_wch(win, 3 + selectedProperty, 0, &propertyDotChar);
-          selectedProperty += subResult;
+          selectedProperty += static_cast<int>(subResult);
           mvwadd_wch(win, 3 + selectedProperty, 0, &selectedPropertyDotChar);
         }
       }
@@ -496,10 +515,14 @@ vector<Property*> BoardState::promptChooseProperty(vector<unsigned char> colorGr
 
       break;
     // Up/down
-    } else if (result == -1 || result == 1) {
+    } else if (result == NavigateListResult::Up || result == NavigateListResult::Down) {
+      // Make the previously selected one an open dot
       SET_CCHAR_COLOR(propertyDotChar, colorGroups[selectedColorGroup] + txtColorOffset);
       mvwadd_wch(win, 3 + selectedColorGroup, 0, &propertyDotChar);
-      selectedColorGroup += result;
+
+      selectedColorGroup += static_cast<int>(result);
+
+      // Make the new one a closed dot
       SET_CCHAR_COLOR(selectedPropertyDotChar, colorGroups[selectedColorGroup] + txtColorOffset);
       mvwadd_wch(win, 3 + selectedColorGroup, 0, &selectedPropertyDotChar);
     }
@@ -507,28 +530,27 @@ vector<Property*> BoardState::promptChooseProperty(vector<unsigned char> colorGr
 end: return resultProperties;
 }
 
-int BoardState::navigateList(unsigned char maxItems, unsigned char currentItem) {
+BoardState::NavigateListResult BoardState::navigateList(unsigned char maxItems, unsigned char currentItem) {
   wrefresh(win);
 
   int ch = wgetch(win);
 
   handleCharInput(ch);
 
-  if ((ch == KEY_DOWN && currentItem < maxItems - 1) || (ch == KEY_UP && currentItem > 0)) {
-    // KEY_UP is 1+KEY_DOWN
-    // If they pressed down, it evaluates to 0 * 2 + 1 which is 1.
-    // If they pressed up, it evaluates to -1 * 2 + 1 which is -1
-    return (KEY_DOWN - ch) * 2 + 1;
-  }
-  else if (ch == KEY_LEFT || ch == KEY_RIGHT) {
-    return (KEY_LEFT - ch) * 2 + 1;
-  }
-  else if (ch == KEY_ENTER || ch == '\n') {
-    return 0;
+  if (ch == KEY_DOWN && currentItem < maxItems - 1) {
+    return NavigateListResult::Down;
+  } else if (ch == KEY_UP && currentItem > 0) {
+    return NavigateListResult::Up;
+  } else if (ch == KEY_LEFT) {
+    return NavigateListResult::Left;
+  } else if (ch == KEY_RIGHT) {
+    return NavigateListResult::Right;
+  } else if (ch == KEY_ENTER || ch == '\n') {
+    return NavigateListResult::Confirm;
   } else if (ch == 033) { // ESC character
-    return 2;
+    return NavigateListResult::Cancel;
   } else {
-    return ch; // return the actual character code
+    return NavigateListResult::NoAction;
   }
 }
 

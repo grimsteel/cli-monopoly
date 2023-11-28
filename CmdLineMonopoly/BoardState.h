@@ -26,6 +26,18 @@ public:
   bool setYesNoPrompt(string prompt);
   vector<Player> players;
 private:
+  enum NavigateListResult {
+    Up = -1,
+    Confirm,
+    Down,
+
+    Cancel,
+    NoAction,
+
+    Left,
+    Right
+  };
+
   WINDOW* win;
   BoardCenter boardCenter;
   random_device rd;
@@ -34,11 +46,7 @@ private:
   void drawHeader(unsigned char playerId, string location);
   void drawSubheader(string text);
   vector<Property*> promptChooseProperty(vector<unsigned char> chooseFrom, bool onlyPrintProperties);
-  /// <summary>
-  /// Evaluate the input for navigating a list
-  /// </summary>
-  /// <returns>-1 if the user is moving up, 1 if they are moving down, 0 if they confirmed, 2 if they're cancelling, -2 if no action</returns>
-  int navigateList(unsigned char maxItems, unsigned char currentItem);
+  NavigateListResult navigateList(unsigned char maxItems, unsigned char currentItem);
   char drawMenu(bool showRollDice);
   /// <returns>Boolean - true if the game should be quit</returns>
   bool doTurn(unsigned char playerId);
