@@ -47,6 +47,7 @@ private:
   void drawSubheader(string text);
   vector<Property*> promptChooseProperty(vector<unsigned char> chooseFrom, bool onlyPrintProperties);
   NavigateListResult navigateList(unsigned char maxItems, unsigned char currentItem);
+  bool updateManageHousesStats(short totalNewHouses, short buildingPrice, vector<unsigned char> newHouses);
   char drawMenu(bool showRollDice);
   /// <returns>Boolean - true if the game should be quit</returns>
   bool doTurn(unsigned char playerId);

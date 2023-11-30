@@ -327,21 +327,12 @@ bool BoardState::doTurn(unsigned char playerId) {
           newHouses[i] = colorGroupProperties[i]->numHouses;
         }
 
-        while (true) {
-          for (int i = 0; i < newHouses.size(); i++) {
-            wmove(win, 3 + i, 30);
-            wclrtoeol(win);
-            int houses = newHouses[i];
-            if (houses >= 1 && houses <= 4) {
-              cchar_t houseChar;
-              setcchar(&houseChar, L"\uf015", 0, TXT_GREEN, NULL);
-              mvwhline_set(win, 3 + i, 30, &houseChar, houses);
-            }
-            else if (houses == 5) {
-              mvwaddwstr(win, 3 + i, 30, L"\U000f02dd");
-            }
-          }
+        short totalNewHouses = 0;
+        bool isEvenBuild = false;
 
+        updateManageHousesStats(totalNewHouses, colorGroupProperties[0]->prices.buildingPrice, newHouses);
+
+        while (true) {
           // j is now the number of properties we found
           NavigateListResult result = navigateList(static_cast<unsigned char>(colorGroupProperties.size()), selectedProperty);
           if (result == NavigateListResult::Cancel) break;
@@ -358,8 +349,12 @@ bool BoardState::doTurn(unsigned char playerId) {
           // Left/Right
           else if (result == NavigateListResult::Left && newHouses[selectedProperty] > 0) {
             newHouses[selectedProperty]--;
+            totalNewHouses--;
+            isEvenBuild = updateManageHousesStats(totalNewHouses, colorGroupProperties[0]->prices.buildingPrice, newHouses);
           } else if (result == NavigateListResult::Right && newHouses[selectedProperty] < 5) {
             newHouses[selectedProperty]++;
+            totalNewHouses++;
+            isEvenBuild = updateManageHousesStats(totalNewHouses, colorGroupProperties[0]->prices.buildingPrice, newHouses);
           }
         }
         
@@ -414,6 +409,36 @@ bool BoardState::doTurn(unsigned char playerId) {
       }
     }
   }
+}
+
+bool BoardState::updateManageHousesStats(short totalNewHouses, short buildingPrice, vector<unsigned char> newHouses) {
+  unsigned char baseHouseCount = newHouses[0];
+  bool isEvenBuild = true;
+  for (int i = 0; i < newHouses.size(); i++) {
+    wmove(win, 3 + i, 30);
+    wclrtoeol(win);
+    int houses = newHouses[i];
+    if (houses >= 1 && houses <= 4) {
+      cchar_t houseChar;
+      setcchar(&houseChar, L"\uf015", 0, TXT_GREEN, NULL);
+      mvwhline_set(win, 3 + i, 30, &houseChar, houses);
+    }
+    else if (houses == 5) {
+      mvwaddwstr(win, 3 + i, 30, L"\U000f02dd");
+    }
+
+    if (houses != 255) {
+      int houseDiff = baseHouseCount - houses;
+      if (houseDiff > 1 || houseDiff < -1) isEvenBuild = false;
+    }
+  }
+
+  mvwprintw(win, 3 + static_cast<int>(newHouses.size()) + 1, 0, "Price: $%d\n", totalNewHouses * buildingPrice);
+  if (!isEvenBuild) {
+    wprintw(win, isEvenBuild ? "hi" : "no");
+  }
+
+  return true;
 }
 
 void BoardState::drawHeader(unsigned char playerId, string location) {
