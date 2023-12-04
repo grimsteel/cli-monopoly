@@ -89,13 +89,14 @@ public:
   string displayName;
   Prices prices;
   unsigned char ownedBy = 255; // 0-254 are player IDs, 255 is -1
-  unsigned char numHouses = 0; // 5 houses equals 1 hotel. 255 houses (-1) is mortgaged
-  
   unsigned char colorGroup;
   void drawInitial() override;
   void handlePlayer(Player* player, BoardState* mainMenu) override;
+  unsigned char getHouses() { return numHouses; }
+  void setHouses(unsigned char newHouses);
 private:
   void drawPlayerOwn(Player* player);
+  unsigned char numHouses = 0; // 5 houses equals 1 hotel. 255 houses (-1) is mortgaged
 };
 
 /// Chance or Community Chest

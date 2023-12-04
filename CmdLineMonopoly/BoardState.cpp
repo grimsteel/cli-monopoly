@@ -258,11 +258,6 @@ bool BoardState::doTurn(unsigned char playerId) {
         // Number of properties required for this color group. Only show properties in a color group where this is 0.
         unsigned char propertiesRequired[] = { 2, 3, 3, 3, 3, 3, 3, 2 };
 
-        // Lowest number of houses in this color group. For instance, if Medit. has 3 houses but Baltic has 4, the 0th element here (c group 1) would be 3.
-        // Therefore, because Medit has an equal # of houses to the value here, you can only buy
-        // Baltic has a higher number, so you can only sell
-        unsigned char colorGroupHouses[] = { 255, 255, 255, 255, 255, 255, 255, 255 };
-
         // Bitset (one bit per c group) indicating if all properties have the same # of houses, meaning the player can buy & sell on all of them
         uint8_t allHousesEqual = 0b11111111;
 
@@ -270,19 +265,6 @@ bool BoardState::doTurn(unsigned char playerId) {
         for (auto currentProperty = player->properties.begin(); currentProperty != player->properties.end(); currentProperty++) {
           int colorGroup = (*currentProperty)->colorGroup - BGT_PURPLE;
           propertiesRequired[colorGroup]--;
-
-          /*// If all three conditions are true, set the allHousesEqual bit to false
-          // 1. The allHousesEqual bit must be true (don't change if it's already false)
-          // 2. The colorGroupHouses item must not be uninitialized (255). If it is, then we're anyway going to set it to the current property houses soon
-          // 3. The current property houses must be different than the colorGroupHouses item
-          if (allHousesEqual | 1 << colorGroup && colorGroupHouses[colorGroup] != 255 && colorGroupHouses[colorGroup] != (*currentProperty)->numHouses) {
-            allHousesEqual &= ~(static_cast<uint8_t>(1 << colorGroup));
-          }
-
-          // If the current property has less houses, set colorGroupHouses
-          if ((*currentProperty)->numHouses < colorGroupHouses[colorGroup]) {
-            colorGroupHouses[colorGroup] = (*currentProperty)->numHouses;
-          }*/
         }
 
         vector<unsigned char> availableColorGroups;
@@ -293,23 +275,6 @@ bool BoardState::doTurn(unsigned char playerId) {
         availableColorGroups.shrink_to_fit();
 
         if (availableColorGroups.size() == 0) break;
-
-        /*vector<Property*> availableProperties;
-        availableProperties.reserve(player->properties.size() / 2); // guesstimation
-
-        // Iterate over properties, adding them to availableProperties
-        for (vector<Property*>::iterator currentProperty = player->properties.begin(); currentProperty != player->properties.end(); ++currentProperty) {
-          unsigned char colorGroup = (*currentProperty)->colorGroup - BGT_PURPLE;
-          if (propertiesRequired[colorGroup] == 0) {
-            availableProperties.push_back(*currentProperty);
-          }
-        }
-
-        availableProperties.shrink_to_fit();
-
-        if (availableProperties.size() == 0) {
-          break;
-        }*/
 
         vector<Property*> colorGroupProperties = promptChooseProperty(availableColorGroups, true);
         if (colorGroupProperties.size() == 0) break;
@@ -324,13 +289,15 @@ bool BoardState::doTurn(unsigned char playerId) {
         vector<unsigned char> newHouses(colorGroupProperties.size());
 
         for (int i = 0; i < colorGroupProperties.size(); i++) {
-          newHouses[i] = colorGroupProperties[i]->numHouses;
+          newHouses[i] = colorGroupProperties[i]->getHouses();
         }
 
         short totalNewHouses = 0;
-        bool isEvenBuild = false;
+        bool isValidBuild = false;
+        short buildingPrice = colorGroupProperties[0]->prices.buildingPrice;
+        short currentMoney = player->getBalance();
 
-        updateManageHousesStats(totalNewHouses, colorGroupProperties[0]->prices.buildingPrice, newHouses);
+        updateManageHousesStats(totalNewHouses, buildingPrice, currentMoney, newHouses);
 
         while (true) {
           // j is now the number of properties we found
@@ -338,7 +305,14 @@ bool BoardState::doTurn(unsigned char playerId) {
           if (result == NavigateListResult::Cancel) break;
           else if (result == NavigateListResult::Confirm) {
             // Make sure what they have done is valid, commit changes, and break
-            break;
+            if (isValidBuild) {
+              player->alterBalance(-1 * totalNewHouses * buildingPrice, "Houses/hotels");
+              for (int i = 0; i < newHouses.size(); i++) {
+                colorGroupProperties[i]->setHouses(newHouses[i]);
+              }
+              doupdate();
+              break;
+            }
           }
           // Up/down
           else if (result == NavigateListResult::Up || result == NavigateListResult::Down) {
@@ -348,17 +322,16 @@ bool BoardState::doTurn(unsigned char playerId) {
           }
           // Left/Right
           else if (result == NavigateListResult::Left && newHouses[selectedProperty] > 0) {
+            // Remove one house and update stats
             newHouses[selectedProperty]--;
             totalNewHouses--;
-            isEvenBuild = updateManageHousesStats(totalNewHouses, colorGroupProperties[0]->prices.buildingPrice, newHouses);
+            isValidBuild = updateManageHousesStats(totalNewHouses, buildingPrice, currentMoney, newHouses);
           } else if (result == NavigateListResult::Right && newHouses[selectedProperty] < 5) {
             newHouses[selectedProperty]++;
             totalNewHouses++;
-            isEvenBuild = updateManageHousesStats(totalNewHouses, colorGroupProperties[0]->prices.buildingPrice, newHouses);
+            isValidBuild = updateManageHousesStats(totalNewHouses, buildingPrice, currentMoney, newHouses);
           }
         }
-        
-        // Prompt whether they would like to buy or sell 1 house
         break;
       } case 3: {
         // List all properties
@@ -382,9 +355,9 @@ bool BoardState::doTurn(unsigned char playerId) {
           selectedProperty->prices.rent[0], selectedProperty->prices.rent[1], selectedProperty->prices.rent[2],
           selectedProperty->prices.rent[3], selectedProperty->prices.rent[4], selectedProperty->prices.rent[5]
         );
-        if (selectedProperty->numHouses == 5) waddstr(win, "Has Hotel\n");
-        else if (selectedProperty->numHouses == 255) waddstr(win, "Mortgaged\n");
-        else if (selectedProperty->numHouses > 0) wprintw(win, "%d Houses\n", selectedProperty->numHouses);
+        if (selectedProperty->getHouses() == 5) waddstr(win, "Has Hotel\n");
+        else if (selectedProperty->getHouses() == 255) waddstr(win, "Mortgaged\n");
+        else if (selectedProperty->getHouses() > 0) wprintw(win, "%d Houses\n", selectedProperty->getHouses());
 
         if (selectedProperty->ownedBy != 255) {
           cchar_t ownerChar;
@@ -411,9 +384,8 @@ bool BoardState::doTurn(unsigned char playerId) {
   }
 }
 
-bool BoardState::updateManageHousesStats(short totalNewHouses, short buildingPrice, vector<unsigned char> newHouses) {
-  unsigned char baseHouseCount = newHouses[0];
-  bool isEvenBuild = true;
+bool BoardState::updateManageHousesStats(short totalNewHouses, short buildingPrice, short currentMoney, vector<unsigned char> newHouses) {
+  int minHouses = newHouses[0], maxHouses = newHouses[0];
   for (int i = 0; i < newHouses.size(); i++) {
     wmove(win, 3 + i, 30);
     wclrtoeol(win);
@@ -424,21 +396,35 @@ bool BoardState::updateManageHousesStats(short totalNewHouses, short buildingPri
       mvwhline_set(win, 3 + i, 30, &houseChar, houses);
     }
     else if (houses == 5) {
+      wattron(win, TXT_RED);
       mvwaddwstr(win, 3 + i, 30, L"\U000f02dd");
+      wattroff(win, TXT_RED);
     }
 
-    if (houses != 255) {
-      int houseDiff = baseHouseCount - houses;
-      if (houseDiff > 1 || houseDiff < -1) isEvenBuild = false;
-    }
+    if (houses < minHouses) minHouses = houses;
+    if (houses > maxHouses) maxHouses = houses;
   }
 
-  mvwprintw(win, 3 + static_cast<int>(newHouses.size()) + 1, 0, "Price: $%d\n", totalNewHouses * buildingPrice);
+  bool isEvenBuild = (maxHouses - minHouses) <= 1;
+
+  short totalPrice = totalNewHouses * buildingPrice;
+
+  mvwprintw(win, 3 + static_cast<int>(newHouses.size()) + 1, 0, "Price: $%d\n", totalPrice);
   if (!isEvenBuild) {
-    wprintw(win, isEvenBuild ? "hi" : "no");
+    wattron(win, COLOR_PAIR(TXT_RED));
+    wprintw(win, "You must build evenly");
+    wattroff(win, COLOR_PAIR(TXT_RED));
+  } else if (totalPrice > currentMoney) {
+    wattron(win, COLOR_PAIR(TXT_YELLOW));
+    wprintw(win, "You don't have enough money");
+    wattroff(win, COLOR_PAIR(TXT_YELLOW));
+  } else {
+    wprintw(win, "Press <enter> to commit changes");
   }
 
-  return true;
+  wclrtobot(win);
+
+  return isEvenBuild && totalPrice <= currentMoney;
 }
 
 void BoardState::drawHeader(unsigned char playerId, string location) {

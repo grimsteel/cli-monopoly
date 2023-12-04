@@ -3,6 +3,7 @@
 #define PDC_WIDE
 #include <curses.h>
 #include <cstdio>
+#include "colors.h"
 
 #pragma region BoardItem class definition
 BoardItem::BoardItem(unsigned char index, string name, BoardItemLocation location) : index(index), name(name), location(location) {
@@ -161,6 +162,7 @@ void Property::handlePlayer(Player* player, BoardState* boardState) {
     boardState->players[ownedBy].alterBalance(rent, rentString);
   }
 }
+
 void Property::drawPlayerOwn(Player* player) {
   cchar_t playerOwnChar;
   setcchar(&playerOwnChar, L"\uf4ca", 0, player->color, NULL);
@@ -188,6 +190,21 @@ void Property::drawPlayerOwn(Player* player) {
     waddstr(win, "         ");
     break;
   }
+}
+
+void Property::setHouses(unsigned char newHouses) {
+  numHouses = newHouses;
+  if (numHouses >= 1 && numHouses <= 4) {
+    cchar_t houseChar;
+    setcchar(&houseChar, L"\uf015", 0, TXT_GREEN, NULL);
+    mvwhline_set(win, playerListY + 1, 3, &houseChar, numHouses);
+  }
+  else if (numHouses == 5) {
+    wattron(win, TXT_RED);
+    mvwaddwstr(win, playerListY + 1, 3, L"\U000f02dd");
+    wattroff(win, TXT_RED);
+  }
+  wnoutrefresh(win);
 }
 #pragma endregion
 

@@ -63,7 +63,7 @@ void Player::setBalance(short newBalance) {
 short Player::getTotalValue() {
   short totalValue = 0;
   for (auto property : properties) {
-    totalValue += property->prices.price + property->numHouses * property->prices.buildingPrice;
+    totalValue += property->prices.price + property->getHouses() * property->prices.buildingPrice;
   }
   return totalValue;
 }
