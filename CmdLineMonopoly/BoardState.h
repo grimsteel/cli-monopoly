@@ -45,7 +45,7 @@ private:
   uniform_int_distribution<unsigned short> dice;
   void drawHeader(unsigned char playerId, string location);
   void drawSubheader(string text);
-  vector<Property*> promptChooseProperty(vector<unsigned char> chooseFrom, bool onlyPrintProperties);
+  vector<Property*> promptChooseProperty(vector<unsigned char> chooseFrom, bool onlyPrintProperties, unsigned char ownedBy);
   NavigateListResult navigateList(unsigned char maxItems, unsigned char currentItem);
   bool updateManageHousesStats(short totalNewHouses, short buildingPrice, short currentMoney, vector<unsigned char> newHouses);
   char drawMenu(bool showRollDice);

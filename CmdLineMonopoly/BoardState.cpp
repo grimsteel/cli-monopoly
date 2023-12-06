@@ -4,7 +4,7 @@
 #include <curses.h>
 #include <string>
 #include <random>
-#include <set>
+#include <unordered_set>
 #include "BoardItems.h"
 #include "utils.h"
 #include "colors.h"
@@ -261,8 +261,11 @@ bool BoardState::doTurn(unsigned char playerId) {
         // Bitset (one bit per c group) indicating if all properties have the same # of houses, meaning the player can buy & sell on all of them
         uint8_t allHousesEqual = 0b11111111;
 
-        // Calculate available houses in linear time
+        // Calculate color groups where all properties are owned
         for (auto currentProperty = player->properties.begin(); currentProperty != player->properties.end(); currentProperty++) {
+          // Skip utilities/railroads
+          if ((*currentProperty)->colorGroup == BGT_BLACK) continue;
+
           int colorGroup = (*currentProperty)->colorGroup - BGT_PURPLE;
           propertiesRequired[colorGroup]--;
         }
@@ -276,7 +279,7 @@ bool BoardState::doTurn(unsigned char playerId) {
 
         if (availableColorGroups.size() == 0) break;
 
-        vector<Property*> colorGroupProperties = promptChooseProperty(availableColorGroups, true);
+        vector<Property*> colorGroupProperties = promptChooseProperty(availableColorGroups, true, 255);
         if (colorGroupProperties.size() == 0) break;
 
         unsigned char colorGroup = colorGroupProperties[0]->colorGroup;
@@ -306,7 +309,7 @@ bool BoardState::doTurn(unsigned char playerId) {
           else if (result == NavigateListResult::Confirm) {
             // Make sure what they have done is valid, commit changes, and break
             if (isValidBuild) {
-              player->alterBalance(-1 * totalNewHouses * buildingPrice, "Houses/hotels");
+              player->alterBalance(-totalNewHouses * buildingPrice, "Houses/hotels");
               for (int i = 0; i < newHouses.size(); i++) {
                 colorGroupProperties[i]->setHouses(newHouses[i]);
               }
@@ -333,15 +336,43 @@ bool BoardState::doTurn(unsigned char playerId) {
           }
         }
         break;
+      } case 2: {
+          // Mortgage/unmortgage properties
+          // Mortagable color groups cannot have any houses on them.
+          unordered_set<unsigned char> availableColorGroupsSet;
+
+          for (auto currentProperty = player->properties.begin(); currentProperty != player->properties.end(); currentProperty++) {
+            // Skip utilities/railroads
+            if ((*currentProperty)->colorGroup == BGT_BLACK) continue;
+
+            int colorGroup = (*currentProperty)->colorGroup - BGT_PURPLE;
+            unsigned char numHouses = (*currentProperty)->getHouses();
+            bool isInSet = availableColorGroupsSet.contains(colorGroup);
+            // All houses on the color group cannot have any houses (build evenly)
+            bool cannotBeMortgaged = numHouses >= 1 && numHouses <= 4;
+
+            if (cannotBeMortgaged && isInSet) {
+              availableColorGroupsSet.erase(colorGroup);
+            }
+            else if (!(cannotBeMortgaged || isInSet)) {
+              availableColorGroupsSet.insert(colorGroup);
+            }
+          }
+
+          // Convert to vector
+          vector<unsigned char> availableColorGroups = vector(availableColorGroupsSet.begin(), availableColorGroupsSet.end());
+
+          vector<Property*> selectedProperties = promptChooseProperty(availableColorGroups, false, playerId); // all color Groups
+          if (selectedProperties.size() == 0) break;
+          Property* selectedProperty = selectedProperties[0];
+
+          if (selectedProperty->getHouses() == 255) selectedProperty->setHouses(0);
+          else selectedProperty->setHouses(255);
+          break;
       } case 3: {
         // List all properties
-
-        //vector<Property*> displayProperties(sizeof(properties) / sizeof(Property));
-        //for (int i = 0; i < sizeof(properties) / sizeof(Property); i++) {
-        //  displayProperties[i] = &properties[i];
-        //}
         
-        vector<Property*> selectedProperties = promptChooseProperty({ 0, 1, 2, 3, 4, 5, 6, 7 }, false); // all color Groups
+        vector<Property*> selectedProperties = promptChooseProperty({ 0, 1, 2, 3, 4, 5, 6, 7 }, false, 255); // all color Groups
         if (selectedProperties.size() == 0) break;
         Property* selectedProperty = selectedProperties[0];
 
@@ -412,15 +443,17 @@ bool BoardState::updateManageHousesStats(short totalNewHouses, short buildingPri
   mvwprintw(win, 3 + static_cast<int>(newHouses.size()) + 1, 0, "Price: $%d\n", totalPrice);
   if (!isEvenBuild) {
     wattron(win, COLOR_PAIR(TXT_RED));
-    wprintw(win, "You must build evenly");
+    wprintw(win, "You must build evenly\n");
     wattroff(win, COLOR_PAIR(TXT_RED));
   } else if (totalPrice > currentMoney) {
     wattron(win, COLOR_PAIR(TXT_YELLOW));
-    wprintw(win, "You don't have enough money");
+    wprintw(win, "You don't have enough money\n");
     wattroff(win, COLOR_PAIR(TXT_YELLOW));
   } else {
-    wprintw(win, "Press <enter> to commit changes");
+    wprintw(win, "Press <enter> to commit changes\n");
   }
+
+  wprintw(win, "Press <left> and <right> to alter house count\n");
 
   wclrtobot(win);
 
@@ -445,7 +478,7 @@ void BoardState::drawSubheader(string text) {
   wattroff(win, A_UNDERLINE);
 }
 
-vector<Property*> BoardState::promptChooseProperty(vector<unsigned char> colorGroups, bool onlyPrintProperties) {
+vector<Property*> BoardState::promptChooseProperty(vector<unsigned char> colorGroups, bool onlyPrintProperties, unsigned char ownedBy) {
   constexpr unsigned char txtColorOffset = TXT_PURPLE;
 
   constexpr const char* colorGroupNames[] = { "Purple", "Light Blue", "Pink", "Orange", "Red", "Yellow", "Green", "Blue" };
@@ -490,12 +523,15 @@ vector<Property*> BoardState::promptChooseProperty(vector<unsigned char> colorGr
 
       // Render a list of all of the properties
       // Loop until we reach a property of a different color group
-      unsigned char j = 0;
-      for (unsigned char i = offset; properties[i].colorGroup - BGT_PURPLE == colorGroups[selectedColorGroup]; i++, j++) {
+      for (unsigned char i = offset; properties[i].colorGroup - BGT_PURPLE == colorGroups[selectedColorGroup]; i++) {
+        // If we need to filter by whether they own it, 
+        if (ownedBy != 255 && properties[i].ownedBy != ownedBy) continue;
+        // Skip over utilities
+        if (properties[i].colorGroup == BGT_BLACK) continue;
+
         wadd_wch(win, &propertyDotChar);
         wprintw(win, " %s\n", properties[i].name.c_str());
         colorGroupProperties.push_back(&properties[i]);
-        if (properties[i + 1].colorGroup == BGT_BLACK) i++; // skip over utilities
       }
 
       mvwadd_wch(win, 3, 0, &selectedPropertyDotChar);
@@ -508,7 +544,7 @@ vector<Property*> BoardState::promptChooseProperty(vector<unsigned char> colorGr
 
       while (true) {
         // j is now the number of properties we found
-        NavigateListResult subResult = navigateList(j, selectedProperty);
+        NavigateListResult subResult = navigateList(colorGroupProperties.size(), selectedProperty);
         if (subResult == NavigateListResult::Cancel) goto end;
         else if (subResult == NavigateListResult::Confirm) {
           // Add the resulting property and exit;

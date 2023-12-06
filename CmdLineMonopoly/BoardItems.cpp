@@ -204,6 +204,11 @@ void Property::setHouses(unsigned char newHouses) {
     mvwaddwstr(win, playerListY + 1, 3, L"\U000f02dd");
     wattroff(win, TXT_RED);
   }
+  else if (numHouses == 255) {
+    wattron(win, TXT_YELLOW);
+    mvwaddstr(win, playerListY + 1, 3, "Mortgaged");
+    wattroff(win, TXT_YELLOW);
+  }
   wnoutrefresh(win);
 }
 #pragma endregion
