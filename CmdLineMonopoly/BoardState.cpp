@@ -263,8 +263,8 @@ bool BoardState::doTurn(unsigned char playerId) {
 
         // Calculate color groups where all properties are owned
         for (auto currentProperty = player->properties.begin(); currentProperty != player->properties.end(); currentProperty++) {
-          // Skip utilities/railroads
-          if ((*currentProperty)->colorGroup == BGT_BLACK) continue;
+          // Skip utilities, railroads, and mortgaged properties
+          if ((*currentProperty)->colorGroup == BGT_BLACK || (*currentProperty)->getHouses() == 255) continue;
 
           int colorGroup = (*currentProperty)->colorGroup - BGT_PURPLE;
           propertiesRequired[colorGroup]--;
@@ -349,7 +349,7 @@ bool BoardState::doTurn(unsigned char playerId) {
             unsigned char numHouses = (*currentProperty)->getHouses();
             bool isInSet = availableColorGroupsSet.contains(colorGroup);
             // All houses on the color group cannot have any houses (build evenly)
-            bool cannotBeMortgaged = numHouses >= 1 && numHouses <= 4;
+            bool cannotBeMortgaged = numHouses >= 1 && numHouses <= 5;
 
             if (cannotBeMortgaged && isInSet) {
               availableColorGroupsSet.erase(colorGroup);
@@ -359,15 +359,39 @@ bool BoardState::doTurn(unsigned char playerId) {
             }
           }
 
+          if (availableColorGroupsSet.size() == 0) break;
+
           // Convert to vector
           vector<unsigned char> availableColorGroups = vector(availableColorGroupsSet.begin(), availableColorGroupsSet.end());
 
-          vector<Property*> selectedProperties = promptChooseProperty(availableColorGroups, false, playerId); // all color Groups
+          // Have the player choose a property
+          vector<Property*> selectedProperties = promptChooseProperty(availableColorGroups, false, playerId);
           if (selectedProperties.size() == 0) break;
           Property* selectedProperty = selectedProperties[0];
 
-          if (selectedProperty->getHouses() == 255) selectedProperty->setHouses(0);
-          else selectedProperty->setHouses(255);
+          short mortgageValue = selectedProperty->prices.price / 2;
+
+          // 255 house count means mortgaged
+          if (selectedProperty->getHouses() == 255) {
+              // Note: We need to make sure they have enough money
+              short unmmortgagePrice = (mortgageValue * 11) / 10;
+              if (player->getBalance() >= unmmortgagePrice) {
+                  selectedProperty->setHouses(0);
+
+                  char unmortgagedCString[100];
+                  snprintf(unmortgagedCString, 100, "Unmortgaged %s", selectedProperty->name.c_str());
+
+                  player->alterBalance(-unmmortgagePrice, string(unmortgagedCString));
+              }
+          } else {
+              selectedProperty->setHouses(255);
+
+              char mortgagedCString[100];
+              snprintf(mortgagedCString, 100, "Mortgaged %s", selectedProperty->name.c_str());
+
+              player->alterBalance(mortgageValue, string(mortgagedCString));
+          }
+          doupdate();
           break;
       } case 3: {
         // List all properties
@@ -544,7 +568,7 @@ vector<Property*> BoardState::promptChooseProperty(vector<unsigned char> colorGr
 
       while (true) {
         // j is now the number of properties we found
-        NavigateListResult subResult = navigateList(colorGroupProperties.size(), selectedProperty);
+        NavigateListResult subResult = navigateList(static_cast<unsigned char>(colorGroupProperties.size()), selectedProperty);
         if (subResult == NavigateListResult::Cancel) goto end;
         else if (subResult == NavigateListResult::Confirm) {
           // Add the resulting property and exit;
@@ -610,7 +634,7 @@ char BoardState::drawMenu(bool showRollDice) {
     wprintw(win, "  Roll Dice\n");
   }
   wprintw(win, "  Manage Houses/Hotels\n");
-  wprintw(win, "  Mortage Properties\n");
+  wprintw(win, "  (Un)Mortage Properties\n");
   wprintw(win, "  View Property Info\n");
   wprintw(win, "  End Game\n");
   wprintw(win, "  End Turn");

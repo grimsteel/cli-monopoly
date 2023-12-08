@@ -194,21 +194,23 @@ void Property::drawPlayerOwn(Player* player) {
 
 void Property::setHouses(unsigned char newHouses) {
   numHouses = newHouses;
+  wmove(win, playerListY + 1, 3);
   if (numHouses >= 1 && numHouses <= 4) {
     cchar_t houseChar;
     setcchar(&houseChar, L"\uf015", 0, TXT_GREEN, NULL);
-    mvwhline_set(win, playerListY + 1, 3, &houseChar, numHouses);
+    whline_set(win, &houseChar, numHouses);
   }
   else if (numHouses == 5) {
-    wattron(win, TXT_RED);
-    mvwaddwstr(win, playerListY + 1, 3, L"\U000f02dd");
-    wattroff(win, TXT_RED);
+    wattron(win, COLOR_PAIR(TXT_RED));
+    waddwstr(win, L"\U000f02dd");
+    wattroff(win, COLOR_PAIR(TXT_RED));
   }
   else if (numHouses == 255) {
-    wattron(win, TXT_YELLOW);
-    mvwaddstr(win, playerListY + 1, 3, "Mortgaged");
-    wattroff(win, TXT_YELLOW);
+    wattron(win, COLOR_PAIR(TXT_YELLOW));
+    waddstr(win, "Mort.");
+    wattroff(win, COLOR_PAIR(TXT_YELLOW));
   }
+  wclrtoeol(win);
   wnoutrefresh(win);
 }
 #pragma endregion
