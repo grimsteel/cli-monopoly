@@ -1,5 +1,7 @@
 #pragma once
 
+#include <curses.h>
+
 void init_colors();
 
 constexpr int COLOR_PURPLE = 16;
@@ -32,3 +34,15 @@ constexpr int TXT_GREEN = 17;
 constexpr int TXT_BLUE = 18;
 constexpr int TXT_WHITE = 19;
 constexpr int NUM_TXT_COLORS = TXT_BLUE - TXT_PURPLE + 1;
+
+class Icons {
+private:
+  static Icons& icons();
+  cchar_t houseChar;
+  cchar_t hotelChar;
+  const wchar_t iconChars[3] = L"\uf105\uf1ad";
+  Icons();
+public:
+  static cchar_t* house();
+  static cchar_t* hotel();
+};

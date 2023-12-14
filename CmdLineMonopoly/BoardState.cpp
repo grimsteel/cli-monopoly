@@ -422,11 +422,9 @@ bool BoardState::doTurn(unsigned char playerId) {
         }
 
         // Print the house icons
-        cchar_t houseChar;
-        setcchar(&houseChar, L"\uf015", 0, 0, NULL);
-        mvwvline_set(win, 8, 1, &houseChar, 4);
+        mvwvline_set(win, 8, 1, Icons::house(), 4);
         // Hotel icon (Surrogate pair so capital U)
-        mvwaddwstr(win, 12, 1, L"\U000f02dd");
+        mvwadd_wch(win, 12, 1, Icons::hotel());
         wrefresh(win);
         wgetch(win);
         break;
@@ -445,15 +443,12 @@ bool BoardState::updateManageHousesStats(short totalNewHouses, short buildingPri
     wmove(win, 3 + i, 30);
     wclrtoeol(win);
     int houses = newHouses[i];
+    
     if (houses >= 1 && houses <= 4) {
-      cchar_t houseChar;
-      setcchar(&houseChar, L"\uf015", 0, TXT_GREEN, NULL);
-      mvwhline_set(win, 3 + i, 30, &houseChar, houses);
+      mvwhline_set(win, 3 + i, 30, Icons::house(), houses);
     }
     else if (houses == 5) {
-      wattron(win, TXT_RED);
-      mvwaddwstr(win, 3 + i, 30, L"\U000f02dd");
-      wattroff(win, TXT_RED);
+      mvwadd_wch(win, 3 + i, 30, Icons::hotel());
     }
 
     if (houses < minHouses) minHouses = houses;

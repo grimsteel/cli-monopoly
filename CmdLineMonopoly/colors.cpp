@@ -1,6 +1,8 @@
 #include "colors.h"
 #include <curses.h>
 
+wchar_t *iconChars;
+
 /// @brief Initialize all the colors for use with Curses
 void init_colors() {
   start_color();
@@ -34,4 +36,23 @@ void init_colors() {
   init_pair(TXT_GREEN, COLOR_GREEN_M, COLOR_BLACK);
   init_pair(TXT_BLUE, COLOR_BLUE_M, COLOR_BLACK);
   init_pair(TXT_WHITE, COLOR_WHITE, COLOR_BLACK);
+}
+
+// Singleton object
+Icons& Icons::icons() {
+  static Icons icons;
+  return icons;
+}
+
+Icons::Icons() {
+  setcchar(&houseChar, iconChars, 0, COLOR_PAIR(TXT_GREEN), NULL);
+  setcchar(&hotelChar, iconChars + 1, 0, COLOR_PAIR(TXT_RED), NULL);
+}
+
+cchar_t* Icons::house() {
+  return &icons().houseChar;
+}
+
+cchar_t* Icons::hotel() {
+  return &icons().hotelChar;
 }

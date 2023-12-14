@@ -196,14 +196,10 @@ void Property::setHouses(unsigned char newHouses) {
   numHouses = newHouses;
   wmove(win, playerListY + 1, 3);
   if (numHouses >= 1 && numHouses <= 4) {
-    cchar_t houseChar;
-    setcchar(&houseChar, L"\uf015", 0, TXT_GREEN, NULL);
-    whline_set(win, &houseChar, numHouses);
+    whline_set(win, Icons::house(), numHouses);
   }
   else if (numHouses == 5) {
-    wattron(win, COLOR_PAIR(TXT_RED));
-    waddwstr(win, L"\U000f02dd");
-    wattroff(win, COLOR_PAIR(TXT_RED));
+    wadd_wch(win, Icons::hotel());
   }
   else if (numHouses == 255) {
     wattron(win, COLOR_PAIR(TXT_YELLOW));
