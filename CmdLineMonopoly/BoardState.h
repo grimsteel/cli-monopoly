@@ -24,7 +24,9 @@ public:
   unsigned char numRailroadsOwned(unsigned char playerId);
   bool ownsBothUtilities(unsigned char playerId);
   bool setYesNoPrompt(string prompt);
+  void showChanceDraw(int i, RandomDraw::RandomDrawType type);
   vector<Player> players;
+  mt19937 mt;
 private:
   enum NavigateListResult {
     Up = -1,
@@ -41,7 +43,6 @@ private:
   WINDOW* win;
   BoardCenter boardCenter;
   random_device rd;
-  mt19937 mt;
   uniform_int_distribution<unsigned short> dice;
   void drawHeader(unsigned char playerId, string location);
   void drawSubheader(string text);
@@ -62,4 +63,23 @@ private:
   RandomDraw randomDrawItems[6];
   Property properties[28];
   BoardItem* boardItems[40];
+  char chanceMessages[16][3][19] = {
+      { "Advance to", "Boardwalk" },
+      { "Advance to Go", "Collect $200" },
+      { "Advance to", "Illinois Avenue", "(Can collect $200)" },
+      { "Advance to", "St. Charles Place", "(Can collect $200)" },
+      { "Advance to nearest", "railroad. Buy or", "pay 2x rent" },
+      { "Advance to nearest", "railroad. Buy or", "pay 2x rent" },
+      { "Advance to nearest", "utility. Buy or", "pay 10x dice throw" },
+      { "Bank pays you", "dividend of $50" },
+      { "Get Out of", "Jail Free" },
+      { "Go to jail.", "Do not pass Go.", "Don't collect $200" },
+      { "Go back", "three spaces" },
+      { "Make repairs.", "Pay $25 per house", "Pay $100 for hotel" },
+      { "Speeding fine", "Pay $15" },
+      { "Take a trip to", "Reading Railroad", "(Can collect $200)" },
+      { "You were elected", "Chairman of Board", "Pay $50 to all" },
+      { "Your building", "loan matures", "Collect $150." }
+  };
+  char communityChest[16][3][19];
 };

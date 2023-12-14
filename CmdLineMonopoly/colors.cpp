@@ -45,8 +45,8 @@ Icons& Icons::icons() {
 }
 
 Icons::Icons() {
-  setcchar(&houseChar, iconChars, 0, COLOR_PAIR(TXT_GREEN), NULL);
-  setcchar(&hotelChar, iconChars + 1, 0, COLOR_PAIR(TXT_RED), NULL);
+  setcchar(&houseChar, iconChars, 0, TXT_GREEN, NULL);
+  setcchar(&hotelChar, iconChars + 1, 0, TXT_RED, NULL);
 }
 
 cchar_t* Icons::house() {

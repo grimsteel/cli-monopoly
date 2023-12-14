@@ -195,6 +195,7 @@ void Property::drawPlayerOwn(Player* player) {
 void Property::setHouses(unsigned char newHouses) {
   numHouses = newHouses;
   wmove(win, playerListY + 1, 3);
+  wclrtoeol(win);
   if (numHouses >= 1 && numHouses <= 4) {
     whline_set(win, Icons::house(), numHouses);
   }
@@ -206,13 +207,13 @@ void Property::setHouses(unsigned char newHouses) {
     waddstr(win, "Mort.");
     wattroff(win, COLOR_PAIR(TXT_YELLOW));
   }
-  wclrtoeol(win);
+  
   wnoutrefresh(win);
 }
 #pragma endregion
 
 #pragma region RandomDraw class definition
-RandomDraw::RandomDraw(unsigned char index, RandomDrawType type, BoardItemLocation location) : BoardItem(index, type == Chance ? "Chance" : "Community Chest", location), type(type) {}
+RandomDraw::RandomDraw(unsigned char index, RandomDrawType type, BoardItemLocation location) : BoardItem(index, type == Chance ? "Chance" : "Community Chest", location), type(type), randomDrawer(0, 15) {}
 /// Draw the entire card. This should only be called at the start
 void RandomDraw::drawInitial() {
   if (location <= Top) { // Top or Bottom
@@ -225,6 +226,12 @@ void RandomDraw::drawInitial() {
   }
 
   wnoutrefresh(win);
+}
+
+void RandomDraw::handlePlayer(Player* player, BoardState* boardState) {
+    BoardItem::handlePlayer(player, boardState);
+
+    boardState->showChanceDraw(randomDrawer(boardState->mt), type);
 }
 #pragma endregion
 

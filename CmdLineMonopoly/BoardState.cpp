@@ -682,10 +682,13 @@ bool BoardState::setYesNoPrompt(string prompt) {
   return showYesNoPrompt(win, this, prompt, 0, 2);
 }
 unsigned char BoardState::rollDice() {
-  auto roll1 = 0; // dice(mt);
+  auto roll1 = 1; // dice(mt);
   auto roll2 = 1; // dice(mt);
 
   // Each roll is from 1 to 6, which can be represented with 3 bits
   // This combines the two rolls into one byte. Roll 1 is the first 3 bytes, roll 2 is the next 3
   return static_cast<unsigned char>((roll1 & 0b111) | ((roll2 & 0b111) << 3));
+}
+void BoardState::showChanceDraw(int i, RandomDraw::RandomDrawType type) {
+    boardCenter.showChanceDraw(chanceMessages[i], type);
 }

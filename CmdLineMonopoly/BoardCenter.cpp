@@ -27,9 +27,9 @@ BoardCenter::~BoardCenter() {
 
 void BoardCenter::showDiceRoll(unsigned char roll1, unsigned char roll2) {
   wclear(win);
-  wclear(diceWin);
+  wrefresh(win);
   wattron(diceWin, COLOR_PAIR(BGT_WHITE));
-  mvwaddwstr(diceWin, 0, 0, L"┌───┐ ┌───┐\n│   │ │   │\n└───┘ └───┘");
+  mvwaddwstr(diceWin, 0, 0, L"┌───┐ ┌───┐│   │ │   │└───┘ └───┘");
   wattroff(diceWin, COLOR_PAIR(BGT_WHITE));
   // clear the characters between the two dice
   mvwvline(diceWin, 0, DICE_WIDTH / 2, ' ', DICE_HEIGHT);
@@ -38,8 +38,7 @@ void BoardCenter::showDiceRoll(unsigned char roll1, unsigned char roll2) {
     mvwaddch(diceWin, 1, 2, currentDigit);
     mvwaddch(diceWin, 1, 8, '6' - currentDigit + '1');
 
-    wnoutrefresh(diceWin);
-    doupdate();
+    wrefresh(diceWin);
 
     std::this_thread::sleep_for(100ms);
   }
@@ -47,15 +46,20 @@ void BoardCenter::showDiceRoll(unsigned char roll1, unsigned char roll2) {
   mvwaddch(diceWin, 1, 8, roll2 + '0');
   wattroff(diceWin, COLOR_PAIR(BGT_WHITE));
 
-  wnoutrefresh(diceWin);
-  doupdate();
+  wrefresh(diceWin);
 }
 
-void BoardCenter::showChanceDraw(string text, RandomDraw::RandomDrawType type) {
+void BoardCenter::showChanceDraw(char text[3][19], RandomDraw::RandomDrawType type) {
   chtype bgStyle = COLOR_PAIR(type == RandomDraw::RandomDrawType::Chance ? BGT_ORANGE : BGT_YELLOW);
   wclear(win);
   wclear(diceWin);
+
   wattron(win, bgStyle);
-  mvwaddwstr(win, 0, 0, L"┌─────────────────┐│                 ││                 ││                 │└─────────────────┘");
+  mvwaddwstr(win, 0, 0, L"┌──────────────────┐│                  ││                  ││                  │└──────────────────┘");
+  for (int i = 0; i < 3; i++) {
+    mvwaddstr(win, i + 1, (BOARD_CENTER_WIDTH - static_cast<int>(strlen(text[i]))) / 2, text[i]);
+  }
   wattroff(win, bgStyle);
+
+  wrefresh(win);
 }

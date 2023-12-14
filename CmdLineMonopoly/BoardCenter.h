@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string>
 #include <curses.h>
 #include "BoardItems.h"
 
@@ -13,7 +12,7 @@ public:
   ~BoardCenter();
   void showLogo();
   void showDiceRoll(unsigned char roll1, unsigned char roll2);
-  void showChanceDraw(string text, RandomDraw::RandomDrawType type);
+  void showChanceDraw(char text[3][19], RandomDraw::RandomDrawType type);
 private:
   WINDOW* win;
   WINDOW* diceWin;

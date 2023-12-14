@@ -5,6 +5,7 @@
 #include "Player.h"
 #include <string>
 #include <curses.h>
+#include <random>
 
 #define V_WIN(y, x) newwin(V_PROPERTY_HEIGHT, V_PROPERTY_WIDTH, y, x);
 #define H_WIN(y, x) newwin(H_PROPERTY_HEIGHT, H_PROPERTY_WIDTH, y, x);
@@ -108,7 +109,9 @@ public:
     };
     RandomDraw(unsigned char index, RandomDrawType type, BoardItemLocation location);
     void drawInitial() override;
+    void handlePlayer(Player* player, BoardState* mainMenu) override;
 private:
+    uniform_int_distribution<unsigned short> randomDrawer;
     RandomDrawType type;
 };
 
