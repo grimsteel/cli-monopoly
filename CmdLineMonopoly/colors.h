@@ -41,7 +41,7 @@ private:
   static Icons& icons();
   cchar_t houseChar;
   cchar_t hotelChar;
-  const wchar_t iconChars[3] = L"\uf105\uf1ad";
+  const wchar_t iconChars[3] = L"\uf015\uf1ad";
   Icons();
 public:
   static cchar_t* house();

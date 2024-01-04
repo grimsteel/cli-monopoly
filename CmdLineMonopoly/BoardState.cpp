@@ -11,19 +11,19 @@
 
 using namespace std;
 
-BoardState::BoardState() : mt(rd()), dice(1, 6),
+BoardState::BoardState() : mt(rd()), dice(1, 6), chanceDrawer(0, 15),
   // The first strings here are what show up in prompts ("Would you like to buy Baltic Avenue?")
   // The second strings here are what show up on the rendered game board. Because of spacing issues, some of them use abbreviations.
   // Note that the railroads and utilities do not have rent data, because it's calculated at runtime. Houses also cannot be built on them
   properties {
-    Property(0, "Mediterranean Avenue",   " Mediterran ean Avenue", Property::Prices { 60, 50, { 2, 10, 30, 90, 160, 250 } },  BGT_PURPLE,  BoardItem::Bottom),
+    Property(0, "Mediterranean Avenue",   " Mediterran ean Avenue", Property::Prices { 60, 50, { 2, 10, 30, 90, 160, 250 } },  BGT_PURPLE,  BoardItem::Bottom), // 0
     Property(2, "Baltic Avenue",          "   Baltic     Avenue  ", Property::Prices { 60, 50, { 4, 20, 60, 180, 320, 450 } },  BGT_PURPLE,  BoardItem::Bottom),
     Property(4, "Reading Railroad",       "   Reading   Railroad ", Property::Prices { 200 }, BGT_BLACK,   BoardItem::Bottom),
     Property(5, "Oriental Avenue",        "  Oriental    Avenue  ", Property::Prices { 100, 50, { 6, 30, 90, 270, 400, 550 } }, BGT_LBLUE,   BoardItem::Bottom),
     Property(7, "Vermont Avenue",         "  Vermont     Avenue  ", Property::Prices { 100, 50, { 6, 30, 90, 270, 400, 550 } }, BGT_LBLUE,   BoardItem::Bottom),
     Property(8, "Connecticut Avenue",     " Connecticu  t Avenue ", Property::Prices { 120, 50, { 8, 40, 100, 300, 450, 600 } }, BGT_LBLUE,   BoardItem::Bottom),
 
-    Property(0, "St. Charles Place",      " St Charles Pl.",        Property::Prices { 140, 100, { 10, 50, 150, 450, 625, 750 } }, BGT_PINK,    BoardItem::Left),
+    Property(0, "St. Charles Place",      " St Charles Pl.",        Property::Prices { 140, 100, { 10, 50, 150, 450, 625, 750 } }, BGT_PINK,    BoardItem::Left), // 6
     Property(1, "Electric Company",       "  Electric Co. ",        Property::Prices { 150 }, BGT_BLACK,   BoardItem::Left),
     Property(2, "States Avenue",          " States Avenue ",        Property::Prices { 140, 100, { 10, 50, 150, 450, 625, 750 } }, BGT_PINK,    BoardItem::Left),
     Property(3, "Virginia Avenue",        " Virginia Ave. ",        Property::Prices { 160, 100, { 12, 60, 180, 500, 700, 900 } }, BGT_PINK,    BoardItem::Left),
@@ -32,7 +32,7 @@ BoardState::BoardState() : mt(rd()), dice(1, 6),
     Property(7, "Tennessee Avenue",       " Tennessee Ave.",        Property::Prices { 180, 100, { 14, 70, 200, 550, 750, 950 } }, BGT_ORANGE,  BoardItem::Left),
     Property(8, "New York Avenue",        " New York Ave. ",        Property::Prices { 200, 100, { 16, 80, 220, 600, 800, 1000 } }, BGT_ORANGE,  BoardItem::Left),
 
-    Property(0, "Kentucky Avenue",        "  Kentucky    Avenue  ", Property::Prices { 220, 150, { 18, 90, 250, 700, 875, 1050 } }, BGT_RED,     BoardItem::Top),
+    Property(0, "Kentucky Avenue",        "  Kentucky    Avenue  ", Property::Prices { 220, 150, { 18, 90, 250, 700, 875, 1050 } }, BGT_RED,     BoardItem::Top), // 14
     Property(2, "Indiana Avenue",         "  Indiana     Avenue  ", Property::Prices { 220, 150, { 18, 90, 250, 700, 875, 1050 } }, BGT_RED,     BoardItem::Top),
     Property(3, "Illinois Avenue",        "  Illinois    Avenue  ", Property::Prices { 240, 150, { 20, 100, 300, 750, 925, 1100 } }, BGT_RED,     BoardItem::Top),
     Property(4, "B. & O. Railroad",       "   B. & O.   Railroad ", Property::Prices { 200 }, BGT_BLACK,   BoardItem::Top),
@@ -41,12 +41,12 @@ BoardState::BoardState() : mt(rd()), dice(1, 6),
     Property(7, "Water Works",            "   Water      Works   ", Property::Prices { 150 }, BGT_BLACK,   BoardItem::Top),
     Property(8, "Marvin Gardens",         "   Marvin    Gardens  ", Property::Prices { 280, 150, { 24, 120, 360, 850, 1025, 1200 } }, BGT_YELLOW,  BoardItem::Top),
 
-    Property(0, "Pacific Avenue",         "  Pacific Ave. ",        Property::Prices { 300, 200, { 26, 130, 390, 900, 1100, 1275 } }, BGT_GREEN,   BoardItem::Right),
+    Property(0, "Pacific Avenue",         "  Pacific Ave. ",        Property::Prices { 300, 200, { 26, 130, 390, 900, 1100, 1275 } }, BGT_GREEN,   BoardItem::Right), // 22
     Property(1, "North Carolina Avenue",  " N Carolina Ave",        Property::Prices { 300, 200, { 26, 130, 390, 900, 1100, 1275 } }, BGT_GREEN,   BoardItem::Right),
     Property(3, "Pennsylvania Avenue",    "  Penn. Avenue ",        Property::Prices { 320, 200, { 28, 150, 450, 1000, 1200, 1400 } }, BGT_GREEN,   BoardItem::Right),
     Property(4, "Short Line",             "   Short Line  ",        Property::Prices { 200 }, BGT_BLACK,   BoardItem::Right),
     Property(6, "Park Place",             "   Park Place  ",        Property::Prices { 350, 200, { 35, 175, 500, 1100, 1300, 1500 } }, BGT_BLUE,    BoardItem::Right),
-    Property(8, "Boardwalk",              "   Boardwalk   ",        Property::Prices { 400, 200, { 50, 200, 600, 1400, 1700, 2000 } }, BGT_BLUE,    BoardItem::Right)
+    Property(8, "Boardwalk",              "   Boardwalk   ",        Property::Prices { 400, 200, { 50, 200, 600, 1400, 1700, 2000 } }, BGT_BLUE,    BoardItem::Right) // 27
   },
   randomDrawItems {
     RandomDraw(1, RandomDraw::CommunityChest, BoardItem::Bottom),
@@ -61,49 +61,49 @@ BoardState::BoardState() : mt(rd()), dice(1, 6),
   // I wish I could use a for loop here, but that would really just create unnecessary complexity and slow the initialization down.
   // Manually ordering each of the items is by far the fastest solution
   boardItems {
-    &go,
+    &go, // 0
 
     &properties[0],
     &randomDrawItems[0],
     &properties[1],
     &incomeTax,
-    &properties[2],
+    &properties[2], // 5
     &properties[3],
     &randomDrawItems[1],
     &properties[4],
     &properties[5],
     
-    &jail,
+    &jail, // 10
     
     &properties[6],
     &properties[7],
     &properties[8],
     &properties[9],
-    &properties[10],
+    &properties[10], // 15
     &properties[11],
     &randomDrawItems[2],
     &properties[12],
     &properties[13],
     
-    &freeParking,
+    &freeParking, // 20
     
     &properties[14],
     &randomDrawItems[3],
     &properties[15],
     &properties[16],
-    &properties[17],
+    &properties[17], // 25
     &properties[18],
     &properties[19],
     &properties[20],
     &properties[21],
     
-    &goToJail,
+    &goToJail, // 30
     
     &properties[22],
     &properties[23],
     &randomDrawItems[4],
     &properties[24],
-    &properties[25],
+    &properties[25], // 35
     &randomDrawItems[5],
     &properties[26],
     &luxuryTax,
@@ -184,7 +184,6 @@ bool BoardState::doTurn(unsigned char playerId) {
   Player* player = &players[playerId];
   unsigned char numRolls = 0;
   bool canRollAgain = true;
-  BoardItem* boardItem = NULL;
 
   if (player->boardItemIndex == 255) {
     canRollAgain = false;
@@ -193,8 +192,7 @@ bool BoardState::doTurn(unsigned char playerId) {
 
     drawHeader(playerId, "Jail");
   } else {
-    boardItem = boardItems[player->boardItemIndex];
-    drawHeader(playerId, boardItem->name);
+    drawHeader(playerId, boardItems[player->boardItemIndex]->name);
   }
   
 
@@ -215,7 +213,7 @@ bool BoardState::doTurn(unsigned char playerId) {
         canRollAgain = roll1 == roll2;
 
         // Remove the player from the previous board item
-        boardItem->handlePlayerLeave(playerId);
+        boardItems[player->boardItemIndex]->handlePlayerLeave(playerId);
 
         // Get the new board item
         constexpr unsigned char NUM_BOARD_ITEMS = static_cast<unsigned char>(sizeof(boardItems) / sizeof(BoardItem*));
@@ -243,11 +241,9 @@ bool BoardState::doTurn(unsigned char playerId) {
           jail.arrestPlayer(player, this);
         }
         else {
-          boardItem = boardItems[newBoardItemIndex];
-
           // Draw the header, then notify the board item
-          drawHeader(playerId, boardItem->name);
-          boardItem->handlePlayer(player, this);
+          drawHeader(playerId, boardItems[player->boardItemIndex]->name);
+          boardItems[player->boardItemIndex]->handlePlayer(player, this);
         }
 
         doupdate();
@@ -682,13 +678,56 @@ bool BoardState::setYesNoPrompt(string prompt) {
   return showYesNoPrompt(win, this, prompt, 0, 2);
 }
 unsigned char BoardState::rollDice() {
-  auto roll1 = 1; // dice(mt);
+  auto roll1 = 0; // dice(mt);
   auto roll2 = 1; // dice(mt);
 
   // Each roll is from 1 to 6, which can be represented with 3 bits
   // This combines the two rolls into one byte. Roll 1 is the first 3 bytes, roll 2 is the next 3
   return static_cast<unsigned char>((roll1 & 0b111) | ((roll2 & 0b111) << 3));
 }
-void BoardState::showChanceDraw(int i, RandomDraw::RandomDrawType type) {
+
+void BoardState::movePlayerTo(unsigned char playerId, unsigned char boardItemIndex) {
+  Player* player = &players[playerId];
+  boardItems[player->boardItemIndex]->handlePlayerLeave(playerId);
+
+  // If the new board item index is less than their current index, that means they had to go all the way around
+  if (boardItemIndex <= player->boardItemIndex) {
+    // Give the salary
+    player->alterBalance(200, "Salary");
+  }
+
+  player->boardItemIndex = boardItemIndex;
+  boardItems[player->boardItemIndex]->handlePlayer(player, this);
+}
+
+void BoardState::showChanceDraw(unsigned char playerId, RandomDraw::RandomDrawType type) {
+  unsigned short i = chanceDrawer(mt);
+
+  if (type == RandomDraw::Chance) {
     boardCenter.showChanceDraw(chanceMessages[i], type);
+
+    switch (i) {
+      case 0:
+        // Boardwalk
+        movePlayerTo(playerId, 39);
+        break;
+      case 1:
+        // Go
+        movePlayerTo(playerId, 0);
+        break;
+      case 2:
+        // Illinois
+        movePlayerTo(playerId, 24);
+        break;
+      case 3:
+        // St. Charles
+        movePlayerTo(playerId, 11);
+        break;
+      case 4:
+      case 5:
+        // Nearest railroad  
+    }
+  } else {
+    boardCenter.showChanceDraw(communityChestMessages[i], type);
+  }
 }

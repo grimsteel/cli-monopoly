@@ -146,7 +146,7 @@ void Property::handlePlayer(Player* player, BoardState* boardState) {
     string rentString(rentCString);
 
     bool isUtility = player->boardItemIndex == 12 || player->boardItemIndex == 28;
-    bool isRailroad = player->boardItemIndex == 5 || player->boardItemIndex == 15 || player->boardItemIndex == 25 || player->boardItemIndex == 35;
+    bool isRailroad = player->boardItemIndex % 10 == 5;
     
     short rent = prices.rent[numHouses];
 
@@ -213,7 +213,7 @@ void Property::setHouses(unsigned char newHouses) {
 #pragma endregion
 
 #pragma region RandomDraw class definition
-RandomDraw::RandomDraw(unsigned char index, RandomDrawType type, BoardItemLocation location) : BoardItem(index, type == Chance ? "Chance" : "Community Chest", location), type(type), randomDrawer(0, 15) {}
+RandomDraw::RandomDraw(unsigned char index, RandomDrawType type, BoardItemLocation location) : BoardItem(index, type == Chance ? "Chance" : "Community Chest", location), type(type) {}
 /// Draw the entire card. This should only be called at the start
 void RandomDraw::drawInitial() {
   if (location <= Top) { // Top or Bottom
@@ -231,7 +231,7 @@ void RandomDraw::drawInitial() {
 void RandomDraw::handlePlayer(Player* player, BoardState* boardState) {
     BoardItem::handlePlayer(player, boardState);
 
-    boardState->showChanceDraw(randomDrawer(boardState->mt), type);
+    boardState->showChanceDraw(player->id, type);
 }
 #pragma endregion
 

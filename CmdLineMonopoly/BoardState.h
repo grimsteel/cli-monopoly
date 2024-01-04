@@ -24,9 +24,8 @@ public:
   unsigned char numRailroadsOwned(unsigned char playerId);
   bool ownsBothUtilities(unsigned char playerId);
   bool setYesNoPrompt(string prompt);
-  void showChanceDraw(int i, RandomDraw::RandomDrawType type);
+  void showChanceDraw(unsigned char playerId, RandomDraw::RandomDrawType type);
   vector<Player> players;
-  mt19937 mt;
 private:
   enum NavigateListResult {
     Up = -1,
@@ -43,7 +42,9 @@ private:
   WINDOW* win;
   BoardCenter boardCenter;
   random_device rd;
+  mt19937 mt;
   uniform_int_distribution<unsigned short> dice;
+  uniform_int_distribution<unsigned short> chanceDrawer;
   void drawHeader(unsigned char playerId, string location);
   void drawSubheader(string text);
   vector<Property*> promptChooseProperty(vector<unsigned char> chooseFrom, bool onlyPrintProperties, unsigned char ownedBy);
@@ -53,6 +54,7 @@ private:
   /// <returns>Boolean - true if the game should be quit</returns>
   bool doTurn(unsigned char playerId);
   unsigned char rollDice();
+  void movePlayerTo(unsigned char playerId, unsigned char boardItemIndex);
 
   Go go;
   Jail jail;
@@ -64,22 +66,39 @@ private:
   Property properties[28];
   BoardItem* boardItems[40];
   char chanceMessages[16][3][19] = {
-      { "Advance to", "Boardwalk" },
-      { "Advance to Go", "Collect $200" },
-      { "Advance to", "Illinois Avenue", "(Can collect $200)" },
-      { "Advance to", "St. Charles Place", "(Can collect $200)" },
-      { "Advance to nearest", "railroad. Buy or", "pay 2x rent" },
-      { "Advance to nearest", "railroad. Buy or", "pay 2x rent" },
-      { "Advance to nearest", "utility. Buy or", "pay 10x dice throw" },
-      { "Bank pays you", "dividend of $50" },
-      { "Get Out of", "Jail Free" },
-      { "Go to jail.", "Do not pass Go.", "Don't collect $200" },
-      { "Go back", "three spaces" },
-      { "Make repairs.", "Pay $25 per house", "Pay $100 for hotel" },
-      { "Speeding fine", "Pay $15" },
-      { "Take a trip to", "Reading Railroad", "(Can collect $200)" },
-      { "You were elected", "Chairman of Board", "Pay $50 to all" },
-      { "Your building", "loan matures", "Collect $150." }
+    { "Advance to", "Boardwalk" },
+    { "Advance to Go", "Collect $200" },
+    { "Advance to", "Illinois Avenue" },
+    { "Advance to", "St. Charles Place" },
+    { "Advance to nearest", "railroad. Buy or", "pay 2x rent" },
+    { "Advance to nearest", "railroad. Buy or", "pay 2x rent" },
+    { "Advance to nearest", "utility. Buy or", "pay 10x dice throw" },
+    { "Bank pays you", "dividend of $50" },
+    { "Get out of", "jail free." },
+    { "Go to jail.", "Do not pass Go.", "Don't collect $200" },
+    { "Go back", "three spaces" },
+    { "Make repairs.", "Pay $25 per house", "Pay $100 for hotel" },
+    { "Pay poor tax", "of $15" },
+    { "Take a ride on", "the Reading.", "(Can collect $200)" },
+    { "You were elected", "Chairman of Board", "Pay $50 to each" },
+    { "Your building", "loan matures", "Collect $150." }
   };
-  char communityChest[16][3][19];
+  char communityChestMessages[16][3][19] = {
+    { "Life insurance", "matures", "Collect $100." },
+    { "From sale of stock", "you get $45." },
+    { "Xmas fund matures.", "Collect $100" },
+    { "Pay hospital", "$100." },
+    { "Get out of", "jail free." },
+    { "Pay school tax", "of $150." },
+    { "Go to jail.", "Do not pass Go.", "Don't collect $200" },
+    { "Advance to Go", "Collect $200" },
+    { "Grand opera", "opening. Collect", "$50 from each." },
+    { "Income tax refund", "Collect $20." },
+    { "Receive for", "service $25." },
+    { "You inherit", "$100." },
+    { "Bank error in", "your favor.", "Collect $200." },
+    { "You won 2nd place", "in beauty contest", "Collect $10."},
+    { "Doctor's fee.", "Pay $50" },
+    { "Street repairs:", "Houses: $40", "Hotels: $115" }
+  };
 };

@@ -111,7 +111,6 @@ public:
     void drawInitial() override;
     void handlePlayer(Player* player, BoardState* mainMenu) override;
 private:
-    uniform_int_distribution<unsigned short> randomDrawer;
     RandomDrawType type;
 };
 
