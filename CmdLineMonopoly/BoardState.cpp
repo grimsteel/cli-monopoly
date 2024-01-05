@@ -725,7 +725,19 @@ void BoardState::showChanceDraw(unsigned char playerId, RandomDraw::RandomDrawTy
         break;
       case 4:
       case 5:
-        // Nearest railroad  
+        constexpr unsigned char NUM_BOARD_ITEMS = static_cast<unsigned char>(sizeof(boardItems) / sizeof(BoardItem*));
+
+        // Nearest railroad
+        unsigned char spacesToRailroad =
+          10 - // subtract to get distance to
+          ((players[playerId].boardItemIndex + 5) // offset so that railroads appear at multiples of 10
+            % 10); // mod 10 gives the distance back
+        unsigned char newPosition = players[playerId].boardItemIndex + spacesToRailroad;
+        if (newPosition >= NUM_BOARD_ITEMS) newPosition -= NUM_BOARD_ITEMS;
+        movePlayerTo(playerId, newPosition);
+        // TODO: 2x rent
+        break;
+        
     }
   } else {
     boardCenter.showChanceDraw(communityChestMessages[i], type);
