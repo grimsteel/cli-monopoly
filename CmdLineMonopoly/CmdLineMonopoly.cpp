@@ -3,22 +3,15 @@
 // MIT Licensed
 //
 
-#include <iostream>
-#include <string>
 #define PDC_WIDE
 #include <curses.h>
-#include "CmdLineMonopoly.h"
 #include "BoardItems.h"
 #include "BoardState.h"
 #include "Player.h"
 #include "colors.h"
 #include <locale.h>
 
-using namespace std;
-
-void init_colors();
-
-int main()
+int main(int argc, char* argv[])
 {
   initscr();
   curs_set(FALSE);
@@ -27,9 +20,7 @@ int main()
   keypad(stdscr, TRUE);
   
   BoardState boardState;
-  boardState.drawInitial();
-  boardState.getPlayers();
-  boardState.mainLoop();
+  boardState.run();
 
   endwin();
 

@@ -26,6 +26,12 @@ public:
   bool setYesNoPrompt(string prompt);
   void showChanceDraw(unsigned char playerId, RandomDraw::RandomDrawType type, BoardItem::RollInfo *rollInfo);
   vector<Player> players;
+
+  void run() {
+    drawInitial();
+    getPlayers();
+    mainLoop();
+  }
 private:
   enum NavigateListResult {
     Up = -1,
