@@ -62,7 +62,7 @@ void BoardItem::initWindow() {
     );
   }
 }
-void BoardItem::handlePlayer(Player* player, BoardState* boardState) {
+void BoardItem::handlePlayer(Player* player, BoardState* boardState, RollInfo* info) {
   cchar_t playerChar;
   setcchar(&playerChar, L"\uf4ff", 0, player->color, NULL);
   mvwadd_wch(win, playerListY, player->id + 1, &playerChar);
@@ -127,8 +127,8 @@ void Property::drawInitial() {
 
   wnoutrefresh(win);
 }
-void Property::handlePlayer(Player* player, BoardState* boardState) {
-  BoardItem::handlePlayer(player, boardState);
+void Property::handlePlayer(Player* player, BoardState* boardState, RollInfo* info) {
+  BoardItem::handlePlayer(player, boardState, info);
   if (ownedBy == 255) {
     bool shouldBuy = player->getBalance() >= prices.price && boardState->setYesNoPrompt("Would you like to buy this property?");
     if (shouldBuy) {
@@ -153,9 +153,12 @@ void Property::handlePlayer(Player* player, BoardState* boardState) {
     if (isRailroad) {
       // Rent for railroads goes 25, 50, 100, 200. Multiply by 2 every time, so it's 25 * (2 ^ (numRailroads - 1))
       rent = 25 * ( 1 << (boardState->numRailroadsOwned(ownedBy) - 1));
+
+      if (info->isChanceMultiplied) rent *= 2; // pay 2x rent on railroad
     } else if (isUtility) {
-      short multiplier = boardState->ownsBothUtilities(ownedBy) ? 10 : 4;
-      rent = multiplier * player->lastDiceRoll;
+      // Account for "Advance to nearest utility and pay 10x rent"
+      short multiplier = (info->isChanceMultiplied || boardState->ownsBothUtilities(ownedBy)) ? 10 : 4;
+      rent = multiplier * info->roll;
     }
 
     player->alterBalance(-rent, rentString);
@@ -228,10 +231,10 @@ void RandomDraw::drawInitial() {
   wnoutrefresh(win);
 }
 
-void RandomDraw::handlePlayer(Player* player, BoardState* boardState) {
-    BoardItem::handlePlayer(player, boardState);
+void RandomDraw::handlePlayer(Player* player, BoardState* boardState, RollInfo* info) {
+    BoardItem::handlePlayer(player, boardState, info);
 
-    boardState->showChanceDraw(player->id, type);
+    boardState->showChanceDraw(player->id, type, info);
 }
 #pragma endregion
 
@@ -260,8 +263,8 @@ void TaxItem::drawInitial() {
 
   wnoutrefresh(win);
 }
-void TaxItem::handlePlayer(Player *player, BoardState *mainMenu) {
-  BoardItem::handlePlayer(player, mainMenu);
+void TaxItem::handlePlayer(Player *player, BoardState *mainMenu, RollInfo* info) {
+  BoardItem::handlePlayer(player, mainMenu, info);
 
   if (type == Income) {
     short totalValue = player->getTotalValue();

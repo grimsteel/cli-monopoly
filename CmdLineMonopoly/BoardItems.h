@@ -50,6 +50,10 @@ public:
     Left = 4,
     Right = 8
   };
+  struct RollInfo {
+    unsigned char roll;
+    bool isChanceMultiplied;
+  };
   inline friend BoardItemLocation operator |(BoardItemLocation a, BoardItemLocation b) {
     return static_cast<BoardItemLocation>(static_cast<int>(a) | static_cast<int>(b));
   }
@@ -60,7 +64,7 @@ public:
   /// @brief Draw this entire item
   /// Pure virtual
   virtual void drawInitial() = 0;
-  virtual void handlePlayer(Player* player, BoardState* mainMenu);
+  virtual void handlePlayer(Player* player, BoardState* mainMenu, RollInfo* info);
   void handlePlayerLeave(unsigned char playerId);
   void redraw();
 protected:
@@ -92,7 +96,7 @@ public:
   unsigned char ownedBy = 255; // 0-254 are player IDs, 255 is -1
   unsigned char colorGroup;
   void drawInitial() override;
-  void handlePlayer(Player* player, BoardState* mainMenu) override;
+  void handlePlayer(Player* player, BoardState* mainMenu, RollInfo* info) override;
   unsigned char getHouses() { return numHouses; }
   void setHouses(unsigned char newHouses);
 private:
@@ -109,7 +113,7 @@ public:
     };
     RandomDraw(unsigned char index, RandomDrawType type, BoardItemLocation location);
     void drawInitial() override;
-    void handlePlayer(Player* player, BoardState* mainMenu) override;
+    void handlePlayer(Player* player, BoardState* mainMenu, RollInfo* info) override;
 private:
     RandomDrawType type;
 };
@@ -123,7 +127,7 @@ public:
     };
     TaxItem(unsigned char index, TaxType type, BoardItemLocation location);
     void drawInitial() override;
-    void handlePlayer(Player* player, BoardState* mainMenu) override;
+    void handlePlayer(Player* player, BoardState* mainMenu, RollInfo* info) override;
 private:
     TaxType type;
 };

@@ -24,7 +24,7 @@ public:
   unsigned char numRailroadsOwned(unsigned char playerId);
   bool ownsBothUtilities(unsigned char playerId);
   bool setYesNoPrompt(string prompt);
-  void showChanceDraw(unsigned char playerId, RandomDraw::RandomDrawType type);
+  void showChanceDraw(unsigned char playerId, RandomDraw::RandomDrawType type, BoardItem::RollInfo *rollInfo);
   vector<Player> players;
 private:
   enum NavigateListResult {
@@ -54,7 +54,7 @@ private:
   /// <returns>Boolean - true if the game should be quit</returns>
   bool doTurn(unsigned char playerId);
   unsigned char rollDice();
-  void movePlayerTo(unsigned char playerId, unsigned char boardItemIndex);
+  void movePlayerTo(unsigned char playerId, unsigned char boardItemIndex, BoardItem::RollInfo* rollInfo);
 
   Go go;
   Jail jail;
@@ -94,7 +94,7 @@ private:
     { "Advance to Go", "Collect $200" },
     { "Grand opera", "opening. Collect", "$50 from each." },
     { "Income tax refund", "Collect $20." },
-    { "Receive for", "service $25." },
+    { "Receive for", "services $25." },
     { "You inherit", "$100." },
     { "Bank error in", "your favor.", "Collect $200." },
     { "You won 2nd place", "in beauty contest", "Collect $10."},

@@ -127,12 +127,18 @@ void BoardState::drawInitial() {
   doupdate();
 }
 void BoardState::getPlayers() {
+  BoardItem::RollInfo dummyRollInfo = {
+    .roll = 0,
+    .isChanceMultiplied = false
+  };
+
   for (unsigned char i = 0; i < MAX_PLAYERS; i++) {
     players.emplace_back(i);
     auto newPlayer = players.end() - 1;
     bool shouldContinue = newPlayer->queryAttributes(this);
+
     // Render the player on Go
-    boardItems[newPlayer->boardItemIndex]->handlePlayer(&(*newPlayer), this);
+    boardItems[newPlayer->boardItemIndex]->handlePlayer(&(*newPlayer), this, &dummyRollInfo);
     if (!shouldContinue) break;
   }
   doupdate();
@@ -234,7 +240,6 @@ bool BoardState::doTurn(unsigned char playerId) {
         }
 
         player->boardItemIndex = newBoardItemIndex;
-        player->lastDiceRoll = total;
         
         if (newBoardItemIndex == 255) {
           drawHeader(playerId, "Jail");
@@ -243,7 +248,12 @@ bool BoardState::doTurn(unsigned char playerId) {
         else {
           // Draw the header, then notify the board item
           drawHeader(playerId, boardItems[player->boardItemIndex]->name);
-          boardItems[player->boardItemIndex]->handlePlayer(player, this);
+
+          BoardItem::RollInfo rollInfo = {
+            .roll = total,
+            .isChanceMultiplied = false
+          };
+          boardItems[player->boardItemIndex]->handlePlayer(player, this, &rollInfo);
         }
 
         doupdate();
@@ -678,15 +688,17 @@ bool BoardState::setYesNoPrompt(string prompt) {
   return showYesNoPrompt(win, this, prompt, 0, 2);
 }
 unsigned char BoardState::rollDice() {
-  auto roll1 = 0; // dice(mt);
-  auto roll2 = 1; // dice(mt);
+  unsigned char overrideRoll = 1;
+  return overrideRoll;
+  auto roll1 = dice(mt);
+  auto roll2 = dice(mt);
 
   // Each roll is from 1 to 6, which can be represented with 3 bits
   // This combines the two rolls into one byte. Roll 1 is the first 3 bytes, roll 2 is the next 3
   return static_cast<unsigned char>((roll1 & 0b111) | ((roll2 & 0b111) << 3));
 }
 
-void BoardState::movePlayerTo(unsigned char playerId, unsigned char boardItemIndex) {
+void BoardState::movePlayerTo(unsigned char playerId, unsigned char boardItemIndex, BoardItem::RollInfo* rollInfo) {
   Player* player = &players[playerId];
   boardItems[player->boardItemIndex]->handlePlayerLeave(playerId);
 
@@ -697,11 +709,14 @@ void BoardState::movePlayerTo(unsigned char playerId, unsigned char boardItemInd
   }
 
   player->boardItemIndex = boardItemIndex;
-  boardItems[player->boardItemIndex]->handlePlayer(player, this);
+
+  boardItems[player->boardItemIndex]->handlePlayer(player, this, rollInfo);
 }
 
-void BoardState::showChanceDraw(unsigned char playerId, RandomDraw::RandomDrawType type) {
+void BoardState::showChanceDraw(unsigned char playerId, RandomDraw::RandomDrawType type, BoardItem::RollInfo* rollInfo) {
   unsigned short i = chanceDrawer(mt);
+  unsigned char pos = players[playerId].boardItemIndex;
+  constexpr unsigned char NUM_BOARD_ITEMS = static_cast<unsigned char>(sizeof(boardItems) / sizeof(BoardItem*));
 
   if (type == RandomDraw::Chance) {
     boardCenter.showChanceDraw(chanceMessages[i], type);
@@ -709,37 +724,184 @@ void BoardState::showChanceDraw(unsigned char playerId, RandomDraw::RandomDrawTy
     switch (i) {
       case 0:
         // Boardwalk
-        movePlayerTo(playerId, 39);
+        pos = 39;
         break;
       case 1:
         // Go
-        movePlayerTo(playerId, 0);
+        pos = 0;
         break;
       case 2:
         // Illinois
-        movePlayerTo(playerId, 24);
+        pos = 24;
         break;
       case 3:
         // St. Charles
-        movePlayerTo(playerId, 11);
+        pos = 11;
         break;
       case 4:
-      case 5:
-        constexpr unsigned char NUM_BOARD_ITEMS = static_cast<unsigned char>(sizeof(boardItems) / sizeof(BoardItem*));
-
+      case 5: {
         // Nearest railroad
         unsigned char spacesToRailroad =
           10 - // subtract to get distance to
           ((players[playerId].boardItemIndex + 5) // offset so that railroads appear at multiples of 10
             % 10); // mod 10 gives the distance back
-        unsigned char newPosition = players[playerId].boardItemIndex + spacesToRailroad;
-        if (newPosition >= NUM_BOARD_ITEMS) newPosition -= NUM_BOARD_ITEMS;
-        movePlayerTo(playerId, newPosition);
-        // TODO: 2x rent
+
+        pos = players[playerId].boardItemIndex + spacesToRailroad;
+        if (pos >= NUM_BOARD_ITEMS) pos -= NUM_BOARD_ITEMS;
+
+        rollInfo->isChanceMultiplied = true; // pay 2x rent
         break;
-        
+      } case 6: {
+        // Nearest utility
+
+        // If they in [electric company, water works) then they should go to water works. Otherwise electric company
+        pos = (pos >= 12 && pos < 28) ? 28 : 12;
+
+        rollInfo->isChanceMultiplied = true; // pay 10x dice roll
+        break;
+      } case 7:
+        // Bank pays $50
+        players[playerId].alterBalance(+50, "Bank dividend");
+        break;
+      case 8:
+        players[playerId].numGetOutOfJailCards++;
+        break;
+      case 9:
+        // Go to jail
+        // Because 255 is bigger than every board item index, the salary won't be triggered
+        pos = 255;
+        break;
+      case 10: {
+        // Go back 3 spaces (bypass go unless we actually pass it???)
+        boardItems[pos]->handlePlayerLeave(playerId);
+
+        // If pos is less than 3, add the number of board items 
+        unsigned char newPos = (pos < 3 ? pos + NUM_BOARD_ITEMS : pos) - 3;
+
+        // If the new new pos is greater (they wrapped around), give the salary
+        if (newPos > pos) players[playerId].alterBalance(200, "Salary");
+
+        players[playerId].boardItemIndex = newPos;
+        boardItems[newPos]->handlePlayer(&players[playerId], this, rollInfo);
+        pos = newPos; // skip the check below
+        break;
+      } case 11: {
+        // Make repairs ($25/$100)
+        short totalCharge = 0;
+
+        for (vector<Property*>::iterator it = players[playerId].properties.begin(); it != players[playerId].properties.end(); it++) {
+          unsigned char houses = (*it)->getHouses();
+          if (houses == 5) totalCharge -= 100;
+          else if (houses > 0 && houses < 5) totalCharge -= houses * 25;
+        }
+
+        players[playerId].alterBalance(totalCharge, "Repairs");
+        break;
+      } case 12:
+        // Poor tax
+        players[playerId].alterBalance(-15, "Poor tax");
+        break;
+      case 13:
+        // Reading Railroad
+        pos = 5;
+        break;
+      case 14: {
+        // Chairman
+
+        for (vector<Player>::iterator it = players.begin(); it != players.end(); it++) {
+          if (it->id != playerId) {
+            it->alterBalance(+50, "From chairman");
+          }
+        }
+
+        // Total cost is 50 * (numPlayers - 1)
+        players[playerId].alterBalance(-50 * (players.size() - 1), "Elected chairman");
+        break;
+      } case 15:
+        // Building loan
+        players[playerId].alterBalance(+150, "Building loan");
+        break;
     }
   } else {
     boardCenter.showChanceDraw(communityChestMessages[i], type);
+
+    switch (i) {
+      case 0:
+        players[playerId].alterBalance(+100, "Life insurance");
+        break;
+      case 1:
+        players[playerId].alterBalance(+45, "Stock");
+        break;
+      case 2:
+        players[playerId].alterBalance(+100, "Xmas fund");
+        break;
+      case 3:
+        players[playerId].alterBalance(-100, "Hospital fee");
+        break;
+      case 4:
+        players[playerId].numGetOutOfJailCards++;
+        break;
+      case 5:
+        players[playerId].alterBalance(-150, "School tax");
+        break;
+      case 6:
+        // Go to jail
+        // Because 255 is bigger than every board item index, the salary won't be triggered
+        pos = 255;
+        break;
+      case 7:
+        // Go
+        pos = 0;
+        break;
+      case 8: {
+        // Opera opening
+
+        for (vector<Player>::iterator it = players.begin(); it != players.end(); it++) {
+          if (it->id != playerId) {
+            it->alterBalance(-50, "Opera opening");
+          }
+        }
+
+        // Total is 50 * (numPlayers - 1)
+        players[playerId].alterBalance(+50 * (players.size() - 1), "Opera opening");
+        break;
+      }
+      case 9:
+        players[playerId].alterBalance(+20, "Income tax refund");
+        break;
+      case 10:
+        players[playerId].alterBalance(+25, "Services");
+        break;
+      case 11:
+        players[playerId].alterBalance(+100, "Inheritance");
+        break;
+      case 12:
+        players[playerId].alterBalance(+200, "Bank error");
+        break;
+      case 13:
+        players[playerId].alterBalance(+10, "Beauty contest");
+        break;
+      case 14:
+        players[playerId].alterBalance(-50, "Doctor's fee");
+        break;
+      case 15: {
+        // Street repairs ($40/$115)
+        short totalCharge = 0;
+
+        for (vector<Property*>::iterator it = players[playerId].properties.begin(); it != players[playerId].properties.end(); it++) {
+          unsigned char houses = (*it)->getHouses();
+          if (houses == 5) totalCharge -= 115;
+          else if (houses > 0 && houses < 5) totalCharge -= houses * 40;
+        }
+
+        players[playerId].alterBalance(totalCharge, "Street repairs");
+        break;
+      }
+    }
+  }
+
+  // If their position should change, update it
+  if (pos != players[playerId].boardItemIndex) {
+    movePlayerTo(playerId, pos, rollInfo);
   }
 }
