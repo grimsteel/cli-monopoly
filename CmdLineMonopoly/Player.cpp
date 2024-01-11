@@ -27,12 +27,13 @@ Player::Player(unsigned char id) : id(id) {
   wrefresh(win);
 }
 
-Player::Player(unsigned char id, string name, short balance, unsigned char boardItemIndex, unsigned char color) : Player(id) {
-  name = name;
-  color = color;
+Player::Player(unsigned char id, string n, short b, unsigned char bII, unsigned char c) : Player(id) {
+  name = n;
+  color = c;
+  boardItemIndex = bII;
 
-  setBalance(balance);
   redraw();
+  setBalance(b);
   doupdate();
 }
 

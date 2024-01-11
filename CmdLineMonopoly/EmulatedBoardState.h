@@ -11,7 +11,5 @@ public:
   void getPlayers() override;
 private:
   std::string statePath;
-  //struct 
-  //std::vector<struct {} a> playerData;
 };
 
