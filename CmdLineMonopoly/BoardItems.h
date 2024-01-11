@@ -99,8 +99,8 @@ public:
   void handlePlayer(Player* player, BoardState* mainMenu, RollInfo* info) override;
   unsigned char getHouses() { return numHouses; }
   void setHouses(unsigned char newHouses);
-private:
   void drawPlayerOwn(Player* player);
+private:
   unsigned char numHouses = 0; // 5 houses equals 1 hotel. 255 houses (-1) is mortgaged
 };
 

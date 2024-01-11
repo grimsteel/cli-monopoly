@@ -7,6 +7,7 @@
 #include <curses.h>
 #include "BoardItems.h"
 #include "BoardState.h"
+#include "EmulatedBoardState.h"
 #include "Player.h"
 #include "colors.h"
 #include <locale.h>
@@ -18,9 +19,14 @@ int main(int argc, char* argv[])
   noecho();
   init_colors();
   keypad(stdscr, TRUE);
-  
-  BoardState boardState;
-  boardState.run();
+
+  if (argc == 2) {
+    EmulatedBoardState boardState(argv[1]);
+    boardState.run();
+  } else {
+    BoardState boardState;
+    boardState.run();
+  }
 
   endwin();
 

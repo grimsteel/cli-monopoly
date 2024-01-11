@@ -129,6 +129,10 @@ void Property::drawInitial() {
 }
 void Property::handlePlayer(Player* player, BoardState* boardState, RollInfo* info) {
   BoardItem::handlePlayer(player, boardState, info);
+
+  // If they spawned in here, don't prompt for purchase or do rent
+  if (info->roll == 0) return;
+  
   if (ownedBy == 255) {
     bool shouldBuy = player->getBalance() >= prices.price && boardState->setYesNoPrompt("Would you like to buy this property?");
     if (shouldBuy) {
@@ -138,7 +142,6 @@ void Property::handlePlayer(Player* player, BoardState* boardState, RollInfo* in
       ownedBy = player->id;
       player->addProperty(this);
       drawPlayerOwn(player);
-      wnoutrefresh(win);
     }
   } else if (numHouses != 255) { // only if it's not mortgaged
     char rentCString[100];
@@ -193,6 +196,8 @@ void Property::drawPlayerOwn(Player* player) {
     waddstr(win, "         ");
     break;
   }
+
+  wnoutrefresh(win);
 }
 
 void Property::setHouses(unsigned char newHouses) {

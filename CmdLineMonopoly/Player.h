@@ -20,6 +20,7 @@ class Player
 {
 public:
   Player(unsigned char id);
+  Player(unsigned char id, string name, short balance, unsigned char boardItemIndex, unsigned char color);
   ~Player();
   bool queryAttributes(BoardState* boardState);
   unsigned char color = 0;
@@ -39,4 +40,5 @@ private:
   WINDOW* win;
   unsigned char static usedColors;
   void setBalance(short newBalance);
+  void redraw();
 };

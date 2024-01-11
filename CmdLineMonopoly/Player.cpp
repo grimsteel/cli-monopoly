@@ -27,6 +27,15 @@ Player::Player(unsigned char id) : id(id) {
   wrefresh(win);
 }
 
+Player::Player(unsigned char id, string name, short balance, unsigned char boardItemIndex, unsigned char color) : Player(id) {
+  name = name;
+  color = color;
+
+  setBalance(balance);
+  redraw();
+  doupdate();
+}
+
 Player::~Player() {
   if (win != nullptr)
     delwin(win);
@@ -145,22 +154,29 @@ bool Player::queryAttributes(BoardState* boardState) {
     addAnother = showYesNoPrompt(win, boardState, "Add another?", 0, 3);
   }
 
+  name = playerName;
+  color = TXT_PURPLE + currentIndex;
+  
+  redraw();
+  setBalance(1500);
+  doupdate();
+
+  return addAnother;
+}
+
+void Player::redraw() {
   wclear(win);
+
+  cchar_t selectedColorChar;
+  setcchar(&selectedColorChar, L"\uf4ff", 0, color, NULL);
   mvwadd_wch(win, 0, 0, &selectedColorChar);
 
   wattron(win, A_BOLD | A_UNDERLINE);
-  mvwaddstr(win, 0, 2, playerName);
+  mvwaddstr(win, 0, 2, name.c_str());
   wattroff(win, A_BOLD | A_UNDERLINE);
 
   mvwaddstr(win, 1, 0, "0 Properties");
-  setBalance(1500);
-
-  wrefresh(win);
-
-  name = playerName;
-  color = TXT_PURPLE + currentIndex;
-
-  return addAnother;
+  wnoutrefresh(win);
 }
 
 unsigned char Player::usedColors = 0b00000000;

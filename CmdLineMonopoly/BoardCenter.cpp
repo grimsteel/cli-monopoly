@@ -5,6 +5,7 @@
 #include "colors.h"
 #include <curses.h>
 #include <thread>
+#include <cstring>
 
 using namespace std;
 

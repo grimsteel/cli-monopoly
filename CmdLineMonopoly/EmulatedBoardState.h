@@ -1,12 +1,17 @@
 #pragma once
 
-#include "CmdLineMonopoly.h"
 #include "BoardState.h"
 #include <string>
+#include <vector>
 
-class EmulatedBoardState : BoardState
+class EmulatedBoardState : public BoardState
 {
 public:
   EmulatedBoardState(std::string statePath);
+  void getPlayers() override;
+private:
+  std::string statePath;
+  //struct 
+  //std::vector<struct {} a> playerData;
 };
 

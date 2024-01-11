@@ -18,7 +18,7 @@ public:
   BoardState();
   ~BoardState();
   void drawInitial();
-  void getPlayers();
+  virtual void getPlayers();
   void mainLoop();
   void handleCharInput(int ch);
   unsigned char numRailroadsOwned(unsigned char playerId);
@@ -32,7 +32,7 @@ public:
     getPlayers();
     mainLoop();
   }
-private:
+protected:
   enum NavigateListResult {
     Up = -1,
     Confirm,
