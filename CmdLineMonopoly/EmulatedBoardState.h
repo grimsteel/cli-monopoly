@@ -3,6 +3,7 @@
 #include "BoardState.h"
 #include <string>
 #include <vector>
+#include <queue>
 
 class EmulatedBoardState : public BoardState
 {
@@ -11,5 +12,9 @@ public:
   void getPlayers() override;
 private:
   std::string statePath;
+  unsigned short drawChance() override;
+  unsigned short currentChanceIndex = 3;
+  unsigned char rollDice(unsigned char playerId) override;
+  vector<queue<pair<unsigned char, unsigned char>>> diceRolls;
 };
 

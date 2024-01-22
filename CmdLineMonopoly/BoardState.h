@@ -59,8 +59,9 @@ protected:
   char drawMenu(bool showRollDice);
   /// <returns>Boolean - true if the game should be quit</returns>
   bool doTurn(unsigned char playerId);
-  unsigned char rollDice();
+  virtual unsigned char rollDice(unsigned char playerId);
   void movePlayerTo(unsigned char playerId, unsigned char boardItemIndex, BoardItem::RollInfo* rollInfo);
+  virtual unsigned short drawChance();
 
   Go go;
   Jail jail;

@@ -207,7 +207,7 @@ bool BoardState::doTurn(unsigned char playerId) {
     switch (result) {
       case 0: {
         // Roll dice
-        unsigned char rolls = rollDice();
+        unsigned char rolls = rollDice(playerId);
         numRolls++;
         unsigned char roll1 = rolls & 0b111;
         unsigned char roll2 = rolls >> 3;
@@ -687,9 +687,7 @@ char BoardState::drawMenu(bool showRollDice) {
 bool BoardState::setYesNoPrompt(string prompt) {
   return showYesNoPrompt(win, this, prompt, 0, 2);
 }
-unsigned char BoardState::rollDice() {
-  unsigned char overrideRoll = 1;
-  return overrideRoll;
+unsigned char BoardState::rollDice(unsigned char playerId) {
   auto roll1 = dice(mt);
   auto roll2 = dice(mt);
 
@@ -710,11 +708,18 @@ void BoardState::movePlayerTo(unsigned char playerId, unsigned char boardItemInd
 
   player->boardItemIndex = boardItemIndex;
 
+  mvwprintw(win, 1, 0, "You are on %s.", boardItems[player->boardItemIndex]->name.c_str());
+  wclrtoeol(win);
+  wnoutrefresh(win);
   boardItems[player->boardItemIndex]->handlePlayer(player, this, rollInfo);
 }
 
+unsigned short BoardState::drawChance() {
+    return chanceDrawer(mt);
+}
+
 void BoardState::showChanceDraw(unsigned char playerId, RandomDraw::RandomDrawType type, BoardItem::RollInfo* rollInfo) {
-  unsigned short i = chanceDrawer(mt);
+  unsigned short i = drawChance();
   unsigned char pos = players[playerId].boardItemIndex;
   constexpr unsigned char NUM_BOARD_ITEMS = static_cast<unsigned char>(sizeof(boardItems) / sizeof(BoardItem*));
 
@@ -815,7 +820,7 @@ void BoardState::showChanceDraw(unsigned char playerId, RandomDraw::RandomDrawTy
         }
 
         // Total cost is 50 * (numPlayers - 1)
-        players[playerId].alterBalance(-50 * (players.size() - 1), "Elected chairman");
+        players[playerId].alterBalance(-50 * static_cast<short>(players.size() - 1), "Elected chairman");
         break;
       } case 15:
         // Building loan
@@ -863,7 +868,7 @@ void BoardState::showChanceDraw(unsigned char playerId, RandomDraw::RandomDrawTy
         }
 
         // Total is 50 * (numPlayers - 1)
-        players[playerId].alterBalance(+50 * (players.size() - 1), "Opera opening");
+        players[playerId].alterBalance(+50 * static_cast<short>(players.size() - 1), "Opera opening");
         break;
       }
       case 9:
