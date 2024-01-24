@@ -31,7 +31,7 @@ public:
   unsigned char turnsInJail = 0;
   string name;
   short getBalance() { return balance; }
-  bool alterBalance(short value, string reason);
+  void alterBalance(short value, string reason);
   void addProperty(Property* property) { properties.push_back(property); }
   short getTotalValue();
   vector<Property*> properties;

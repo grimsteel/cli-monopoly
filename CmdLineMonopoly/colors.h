@@ -41,9 +41,13 @@ private:
   static Icons& icons();
   cchar_t houseChar;
   cchar_t hotelChar;
-  const wchar_t iconChars[3] = L"\uf015\uf1ad";
+  cchar_t unselectedItemChar;
+  cchar_t selectedItemChar;
+  const wchar_t iconChars[5] = L"\uf015\uf1ad\uf10c\uf111";
   Icons();
 public:
   static cchar_t* house();
   static cchar_t* hotel();
+  static cchar_t* unselectedItem();
+  static cchar_t* selectedItem();
 };

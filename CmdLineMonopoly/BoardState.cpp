@@ -197,6 +197,11 @@ bool BoardState::doTurn(unsigned char playerId) {
     // TODO: ways of leaving jail - doubles, pay, get out free
 
     drawHeader(playerId, "Jail");
+    unsigned char roll = promptJailChoices(playerId);
+    if (roll != 0) {
+      canRollAgain = false;
+      
+    }
   } else {
     drawHeader(playerId, boardItems[player->boardItemIndex]->name);
   }
@@ -443,6 +448,57 @@ bool BoardState::doTurn(unsigned char playerId) {
   }
 }
 
+unsigned char BoardState::promptJailChoices(unsigned char playerId) {
+  bool showGetOutFree = players[playerId].numGetOutOfJailCards > 0;
+  char numMenuItems = showGetOutFree ? 3 : 2;
+
+  wmove(win, 2, 0);
+  wclrtobot(win);
+  wprintw(win, "  Pay $50\n");
+  wprintw(win, "  Try Rolling Doubles\n");
+
+  if (showGetOutFree) {
+    wprintw(win, "  Use Get Out of Jail Free card\n");
+  }
+
+  mvwadd_wch(win, 2, 0, Icons::selectedItem());
+  mvwvline_set(win, 3, 0, Icons::unselectedItem(), numMenuItems - 1);
+
+  char selectedItem = 0;
+
+  while (true) {
+    wrefresh(win);
+
+    int ch = wgetch(win);
+
+    handleCharInput(ch);
+
+    if (ch == KEY_UP || ch == KEY_DOWN) {
+      // The menu starts at y index = 2
+      // We want to replace the char at x index = 0
+      mvwadd_wch(win, 2 + selectedItem, 0, Icons::unselectedItem());
+
+      if (ch == KEY_UP) selectedItem--;
+      else if (ch == KEY_DOWN) selectedItem++; // KEY_DOWN = higher y value because high y is down
+
+      if (selectedItem >= numMenuItems) selectedItem = 0;
+      else if (selectedItem < 0) selectedItem = numMenuItems - 1;
+
+      mvwadd_wch(win, 2 + selectedItem, 0, Icons::selectedItem());
+    }
+    else if (ch == KEY_ENTER || ch == '\n') {
+      break;
+    }
+  }
+
+  switch (selectedItem) {
+  case 0:
+
+  }
+
+  wrefresh(win);
+}
+
 bool BoardState::updateManageHousesStats(short totalNewHouses, short buildingPrice, short currentMoney, vector<unsigned char> newHouses) {
   int minHouses = newHouses[0], maxHouses = newHouses[0];
   for (int i = 0; i < newHouses.size(); i++) {
@@ -640,15 +696,8 @@ char BoardState::drawMenu(bool showRollDice) {
   wprintw(win, "  End Game\n");
   wprintw(win, "  End Turn");
 
-  cchar_t unselectedItemChar;
-  cchar_t selectedItemChar;
-  setcchar(&unselectedItemChar, L"\uf10c", 0, 0, NULL);
-  setcchar(&selectedItemChar, L"\uf111", 0, TXT_GREEN, NULL);
-
-  mvwadd_wch(win, 2, 0, &selectedItemChar);
-  for (char i = 1; i < numMenuItems; i++) {
-    mvwadd_wch(win, 2 + i, 0, &unselectedItemChar);
-  }
+  mvwadd_wch(win, 2, 0, Icons::selectedItem());
+  mvwvline_set(win, 3, 0, Icons::unselectedItem(), numMenuItems - 1);
 
   char selectedItem = 0;
 
@@ -662,7 +711,7 @@ char BoardState::drawMenu(bool showRollDice) {
     if (ch == KEY_UP || ch == KEY_DOWN || (ch >= '1' && ch <= '0' + numMenuItems)) {
       // The menu starts at y index = 2
       // We want to replace the char at x index = 0
-      mvwadd_wch(win, 2 + selectedItem, 0, &unselectedItemChar);
+      mvwadd_wch(win, 2 + selectedItem, 0, Icons::unselectedItem());
 
       if (ch == KEY_UP) selectedItem--;
       else if (ch == KEY_DOWN) selectedItem++; // KEY_DOWN = higher y value because high y is down
@@ -671,7 +720,7 @@ char BoardState::drawMenu(bool showRollDice) {
       if (selectedItem >= numMenuItems) selectedItem = 0;
       else if (selectedItem < 0) selectedItem = numMenuItems - 1;
 
-      mvwadd_wch(win, 2 + selectedItem, 0, &selectedItemChar);
+      mvwadd_wch(win, 2 + selectedItem, 0, Icons::selectedItem());
     }
     else if (ch == KEY_ENTER || ch == '\n') {
       break;

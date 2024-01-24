@@ -42,11 +42,7 @@ Player::~Player() {
     delwin(win);
 }
 
-bool Player::alterBalance(short value, string reason) {
-  // Check for bankruptcy
-  // TODO: Actually kick player if they go bankrupt
-  if (value + balance <= 0) return false;
-
+void Player::alterBalance(short value, string reason) {
   setBalance(balance + value);
 
   // ncurses does not support mvwdeleteln???
@@ -57,8 +53,6 @@ bool Player::alterBalance(short value, string reason) {
   wattroff(win, COLOR_PAIR(value > 0 ? TXT_GREEN : TXT_RED));
 
   wrefresh(win);
-  
-  return true;
 }
 
 void Player::setBalance(short newBalance) {

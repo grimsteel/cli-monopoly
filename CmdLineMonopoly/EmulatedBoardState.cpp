@@ -46,9 +46,11 @@ void EmulatedBoardState::getPlayers() {
     while (values >> propertyIndex) {
       values >> numHouses;
 
-      properties[propertyIndex].drawPlayerOwn(newPlayer);
-      newPlayer->addProperty(&properties[propertyIndex]);
-      properties[propertyIndex].setHouses(static_cast<unsigned char>(numHouses));
+      Property* property = &properties[propertyIndex];
+      property->ownedBy = newPlayer->id;
+      property->drawPlayerOwn(newPlayer);
+      newPlayer->addProperty(property);
+      property->setHouses(static_cast<unsigned char>(numHouses));
     }
 
     getline(stateFile, line);

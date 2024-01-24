@@ -47,6 +47,8 @@ Icons& Icons::icons() {
 Icons::Icons() {
   setcchar(&houseChar, iconChars, 0, TXT_GREEN, NULL);
   setcchar(&hotelChar, iconChars + 1, 0, TXT_RED, NULL);
+  setcchar(&unselectedItemChar, iconChars + 2, 0, 0, NULL);
+  setcchar(&selectedItemChar, iconChars + 3, 0, TXT_GREEN, NULL);
 }
 
 cchar_t* Icons::house() {
@@ -55,4 +57,11 @@ cchar_t* Icons::house() {
 
 cchar_t* Icons::hotel() {
   return &icons().hotelChar;
+}
+
+cchar_t* Icons::unselectedItem() {
+  return &icons().unselectedItemChar;
+}
+cchar_t* Icons::selectedItem() {
+  return &icons().selectedItemChar;
 }
