@@ -197,10 +197,11 @@ bool BoardState::doTurn(unsigned char playerId) {
     // TODO: ways of leaving jail - doubles, pay, get out free
 
     drawHeader(playerId, "Jail");
-    unsigned char roll = promptJailChoices(playerId);
-    if (roll != 0) {
-      canRollAgain = false;
-      
+    bool wasReleased = promptJailChoices(playerId);
+    if (wasReleased) {
+      player->turnsInJail = 0;
+      canRollAgain = true;
+      numRolls = 1; // don't speed right after getting out of jail
     }
   } else {
     drawHeader(playerId, boardItems[player->boardItemIndex]->name);
@@ -448,55 +449,99 @@ bool BoardState::doTurn(unsigned char playerId) {
   }
 }
 
-unsigned char BoardState::promptJailChoices(unsigned char playerId) {
-  bool showGetOutFree = players[playerId].numGetOutOfJailCards > 0;
-  char numMenuItems = showGetOutFree ? 3 : 2;
+bool BoardState::promptJailChoices(unsigned char playerId) {
+  Player* player = &players[playerId];
+  unsigned char newLocation = 255;
 
-  wmove(win, 2, 0);
-  wclrtobot(win);
-  wprintw(win, "  Pay $50\n");
-  wprintw(win, "  Try Rolling Doubles\n");
-
-  if (showGetOutFree) {
-    wprintw(win, "  Use Get Out of Jail Free card\n");
+  if (player->turnsInJail >= 3) {
+    // Force them to pay the fee
+    player->alterBalance(-50, "Jail");
+    newLocation = 10;
   }
+  else {
+    bool showGetOutFree = player->numGetOutOfJailCards > 0;
+    char numMenuItems = showGetOutFree ? 3 : 2;
 
-  mvwadd_wch(win, 2, 0, Icons::selectedItem());
-  mvwvline_set(win, 3, 0, Icons::unselectedItem(), numMenuItems - 1);
+    wmove(win, 2, 0);
+    wclrtobot(win);
+    wprintw(win, "  Pay $50\n");
+    wprintw(win, "  Try Rolling Doubles\n");
 
-  char selectedItem = 0;
+    if (showGetOutFree) {
+      wprintw(win, "  Use Get Out of Jail Free card\n");
+    }
 
-  while (true) {
+    mvwadd_wch(win, 2, 0, Icons::selectedItem());
+    mvwvline_set(win, 3, 0, Icons::unselectedItem(), numMenuItems - 1);
+
+    char selectedItem = 0;
+
+    while (true) {
+      wrefresh(win);
+
+      int ch = wgetch(win);
+
+      handleCharInput(ch);
+
+      if (ch == KEY_UP || ch == KEY_DOWN) {
+        // The menu starts at y index = 2
+        // We want to replace the char at x index = 0
+        mvwadd_wch(win, 2 + selectedItem, 0, Icons::unselectedItem());
+
+        if (ch == KEY_UP) selectedItem--;
+        else if (ch == KEY_DOWN) selectedItem++; // KEY_DOWN = higher y value because high y is down
+
+        if (selectedItem >= numMenuItems) selectedItem = 0;
+        else if (selectedItem < 0) selectedItem = numMenuItems - 1;
+
+        mvwadd_wch(win, 2 + selectedItem, 0, Icons::selectedItem());
+      }
+      else if (ch == KEY_ENTER || ch == '\n') {
+        break;
+      }
+    }
+
     wrefresh(win);
 
-    int ch = wgetch(win);
+    switch (selectedItem) {
+    case 0:
+      // Pay 50
+      player->alterBalance(-50, "Jail");
+      newLocation = 10;
+      break;
+    case 1: {
+      // Roll doubles
+      unsigned char rolls = rollDice(playerId);
+      unsigned char roll1 = rolls & 0b111;
+      unsigned char roll2 = rolls >> 3;
+      boardCenter.showDiceRoll(roll1, roll2);
 
-    handleCharInput(ch);
-
-    if (ch == KEY_UP || ch == KEY_DOWN) {
-      // The menu starts at y index = 2
-      // We want to replace the char at x index = 0
-      mvwadd_wch(win, 2 + selectedItem, 0, Icons::unselectedItem());
-
-      if (ch == KEY_UP) selectedItem--;
-      else if (ch == KEY_DOWN) selectedItem++; // KEY_DOWN = higher y value because high y is down
-
-      if (selectedItem >= numMenuItems) selectedItem = 0;
-      else if (selectedItem < 0) selectedItem = numMenuItems - 1;
-
-      mvwadd_wch(win, 2 + selectedItem, 0, Icons::selectedItem());
+      if (roll1 == roll2) {
+        // 10 is the index of jail (just visiting)
+        newLocation = 10 + roll1 + roll2;
+      }
+      break;
     }
-    else if (ch == KEY_ENTER || ch == '\n') {
+    case 2:
+      // Get out of jail free
+      player->numGetOutOfJailCards--;
+      newLocation = 10;
       break;
     }
   }
+  if (newLocation != 255) {
+    jail.releasePlayer(playerId);
+    BoardItem::RollInfo info = {
+      .roll = static_cast<unsigned char>(newLocation - 10), // 10 is jail (just visiting)
+      .isChanceMultiplied = false
+    };
+    player->boardItemIndex = newLocation;
+    boardItems[player->boardItemIndex]->handlePlayer(player, this, &info);
+    drawHeader(playerId, boardItems[player->boardItemIndex]->name);
 
-  switch (selectedItem) {
-  case 0:
-
+    return true;
   }
-
-  wrefresh(win);
+  return false;
 }
 
 bool BoardState::updateManageHousesStats(short totalNewHouses, short buildingPrice, short currentMoney, vector<unsigned char> newHouses) {

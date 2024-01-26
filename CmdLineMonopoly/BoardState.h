@@ -62,7 +62,7 @@ protected:
   virtual unsigned char rollDice(unsigned char playerId);
   void movePlayerTo(unsigned char playerId, unsigned char boardItemIndex, BoardItem::RollInfo* rollInfo);
   virtual unsigned short drawChance();
-  unsigned char promptJailChoices(unsigned char playerId);
+  bool promptJailChoices(unsigned char playerId);
 
   Go go;
   Jail jail;

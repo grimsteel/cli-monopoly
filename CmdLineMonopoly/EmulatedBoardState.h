@@ -13,7 +13,7 @@ public:
 private:
   std::string statePath;
   unsigned short drawChance() override;
-  unsigned short currentChanceIndex = 10;
+  unsigned short currentChanceIndex = 4;
   unsigned char rollDice(unsigned char playerId) override;
   vector<queue<pair<unsigned char, unsigned char>>> diceRolls;
 };

@@ -144,6 +144,7 @@ public:
   Jail();
   void drawInitial() override;
   void arrestPlayer(Player* player, BoardState* boardState);
+  void releasePlayer(unsigned char playerId);
 };
 
 class FreeParking : public BoardItem {

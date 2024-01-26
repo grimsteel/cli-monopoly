@@ -315,6 +315,10 @@ void Jail::arrestPlayer(Player* player, BoardState* boardState) {
 
   wnoutrefresh(win);
 }
+void Jail::releasePlayer(unsigned char playerId) {
+  mvwaddch(win, 1, 9 + playerId, ' ');
+  wnoutrefresh(win);
+}
 
 FreeParking::FreeParking() : BoardItem(0, "Free Parking", Top | Left) {}
 void FreeParking::drawInitial() {
