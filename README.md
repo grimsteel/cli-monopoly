@@ -8,15 +8,15 @@ This project will have three main parts:
 3. A Win32 GUI for interacting with Monopoly
 
 ### Progress:
-- [ ] Monopoly Library
+- [x] Monopoly Library
   - [x] Properties
-  - [ ] Money dealing (rent)
-  - [ ] Houses
-  - [ ] Chance/Community Chest
-- [ ] Console Interface
+  - [x] Money dealing (rent)
+  - [x] Houses
+  - [x] Chance/Community Chest
+- [x] Console Interface
   - [x] Properties
   - [x] Menu
-  - [ ] Stats
+  - [x] Stats
 - [ ] Win32 GUI
 - [ ] 
 
