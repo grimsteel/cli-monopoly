@@ -154,10 +154,11 @@ void Property::handlePlayer(Player* player, BoardState* boardState, RollInfo* in
     short rent = prices.rent[numHouses];
 
     if (isRailroad) {
-      // Rent for railroads goes 25, 50, 100, 200. Multiply by 2 every time, so it's 25 * (2 ^ (numRailroads - 1))
-      rent = 25 * ( 1 << (boardState->numRailroadsOwned(ownedBy) - 1));
+      unsigned char numRailroads = boardState->numRailroadsOwned(ownedBy);
+      static constexpr int railroadMultiplier = 25;
+      rent = railroadMultiplier * (1 << (numRailroads - 1));
 
-      if (info->isChanceMultiplied) rent *= 2; // pay 2x rent on railroad
+      if (info->isChanceMultiplied) rent *= 2;
     } else if (isUtility) {
       // Account for "Advance to nearest utility and pay 10x rent"
       short multiplier = (info->isChanceMultiplied || boardState->ownsBothUtilities(ownedBy)) ? 10 : 4;

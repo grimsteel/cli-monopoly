@@ -171,11 +171,12 @@ void BoardState::handleCharInput(int ch) {
 unsigned char BoardState::numRailroadsOwned(unsigned char playerId) {
   unsigned char numRailroads = 0;
 
-  // Correspond to indices 5, 15, 25, and 35 in the boardItems array
-  constexpr int railroadPropertyIndices[] = { 2, 10, 17, 25 };
-
-  for (int i : railroadPropertyIndices) {
-    if (properties[i].ownedBy == playerId) numRailroads++;
+  for (int i = 0; i < sizeof(boardItems) / sizeof(BoardItem*); i++) {
+    // Railroads are at the middle of every side
+    bool isRailroad = i % 10 == 5;
+    if (isRailroad && dynamic_cast<Property*>(boardItems[i])->ownedBy == playerId) {
+      numRailroads++;
+    }
   }
 
   return numRailroads;

@@ -1,7 +1,10 @@
 // CmdLineMonopoly.cpp : A command line interface to Monopoly
-// Copyright (c) 2023 Siddhant Kameswar
+// Copyright (c) 2023-2024 Siddhant Kameswar
 // MIT Licensed
 //
+// This program uses ncurses, which is licensed as free software under the X11/MIT License
+// https://invisible-island.net/ncurses/
+// License: https://invisible-island.net/ncurses/ncurses-license.html
 
 #define PDC_WIDE
 #include <curses.h>
