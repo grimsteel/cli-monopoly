@@ -58,7 +58,7 @@ protected:
   bool updateManageHousesStats(short totalNewHouses, short buildingPrice, short currentMoney, vector<unsigned char> newHouses);
   char drawMenu(bool showRollDice);
   /// <returns>Boolean - true if the game should be quit</returns>
-  bool doTurn(unsigned char playerId);
+  bool doTurn(Player* player);
   virtual unsigned char rollDice(unsigned char playerId);
   void movePlayerTo(unsigned char playerId, unsigned char boardItemIndex, BoardItem::RollInfo* rollInfo);
   virtual unsigned short drawChance();

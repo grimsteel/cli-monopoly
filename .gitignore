@@ -367,5 +367,3 @@ replit.nix
 .replit
 .breakpoints
 .ccls-cache/
-# Usually we're going to use MSBuild instead
-/Makefile

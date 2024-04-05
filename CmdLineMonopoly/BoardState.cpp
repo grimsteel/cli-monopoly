@@ -147,13 +147,12 @@ void BoardState::getPlayers() {
 void BoardState::mainLoop() {
   while (true) {
     for (int i = 0; i < players.size(); i++) {
-      if (doTurn(i)) {
+      if (doTurn(&players[i])) {
         // Quit the game
-        goto game_end;
+        return;
       }
     }
   }
-game_end:;
 }
 void BoardState::handleCharInput(int ch) {
   if (ch == KEY_RESIZE) {
@@ -187,8 +186,8 @@ bool BoardState::ownsBothUtilities(unsigned char playerId) {
   return properties[7].ownedBy == playerId && properties[20].ownedBy == playerId;
 }
 
-bool BoardState::doTurn(unsigned char playerId) {
-  Player* player = &players[playerId];
+bool BoardState::doTurn(Player* player) {
+  unsigned char playerId = player->id;
   unsigned char numRolls = 0;
   bool canRollAgain = true;
 
