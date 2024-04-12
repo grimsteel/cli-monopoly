@@ -61,7 +61,7 @@ protected:
   bool doTurn(Player* player);
   virtual unsigned char rollDice(unsigned char playerId);
   void movePlayerTo(unsigned char playerId, unsigned char boardItemIndex, BoardItem::RollInfo* rollInfo);
-  virtual unsigned short drawChance();
+  virtual unsigned short drawChance(RandomDraw::RandomDrawType type);
   bool promptJailChoices(unsigned char playerId);
 
   Go go;

@@ -808,12 +808,12 @@ void BoardState::movePlayerTo(unsigned char playerId, unsigned char boardItemInd
   boardItems[player->boardItemIndex]->handlePlayer(player, this, rollInfo);
 }
 
-unsigned short BoardState::drawChance() {
+unsigned short BoardState::drawChance(RandomDraw::RandomDrawType type) {
     return chanceDrawer(mt);
 }
 
 void BoardState::showChanceDraw(unsigned char playerId, RandomDraw::RandomDrawType type, BoardItem::RollInfo* rollInfo) {
-  unsigned short i = drawChance();
+  unsigned short i = drawChance(type);
   unsigned char pos = players[playerId].boardItemIndex;
   constexpr unsigned char NUM_BOARD_ITEMS = static_cast<unsigned char>(sizeof(boardItems) / sizeof(BoardItem*));
 

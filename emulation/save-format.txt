@@ -1,0 +1,9 @@
+<space separated chance items>
+<space separated community chest items>
+<'t' for precreation of players or 'f' for only dice rolls>
+if 't', for each player
+  <name> <balance> <color location>
+  <space separated properties>
+  <dice rolls>
+if 'f' for each player
+  <dice rolls>

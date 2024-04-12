@@ -12,9 +12,10 @@ public:
   void getPlayers() override;
 private:
   std::string statePath;
-  unsigned short drawChance() override;
-  unsigned short currentChanceIndex = 4;
+  unsigned short drawChance(RandomDraw::RandomDrawType type) override;
   unsigned char rollDice(unsigned char playerId) override;
   vector<queue<pair<unsigned char, unsigned char>>> diceRolls;
+  queue<unsigned short> chanceOrder;
+  queue<unsigned short> communityChestOrder;
 };
 

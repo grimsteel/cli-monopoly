@@ -1,0 +1,46 @@
+AP CSP Video Planning
+
+Two players: Alice and Bob
+Alice is Red (4), Bob is Green (6)
+
+Turns:
+1. Alice selects Roll Dice
+   Rolls a 2 + 5 = 7, advances to Chance
+   Draws Take a Ride on Reading (13), moves to Reading Railroad and collects 200
+   Buys Reading Railroad
+2. Bob selects Roll Dice
+   Rolls a 6 + 6 = 12, advances to Electric Co
+   Buys Electric Co
+   Rolls again
+   Rolls a 1 + 2 = 3, advances to Penn. Railroad
+   Buys Penn Railroad
+3. Alice selects Roll Dice
+   Rolls a 5 + 5 = 10, advances to Penn. Railroad
+   Pays Rent
+   Rolls again
+   Rolls a 4 + 6 = 10, advances to B & O Railroad
+   Buys B & O
+4. Bob selects Roll Dice
+   Rolls a 5 + 6 = 11, advances to Atlantic Avenue
+   Does not buy
+5. Alice selects Roll Dice
+   Rolls a 2 + 3 = 5, goes to jail
+6. Bob selects Roll Dice
+   Rolls a 6 + 5 = 11, advances to Park Place
+   Buys
+7. Alice selects Pay 50
+   Rolls a 1 + 1 = 2, advances to Electric Co.
+   Pays rent
+8. Bob selects View Property Info > Blue > Boardwalk
+   Bob selects Roll Dice
+   Rolls a 1 + 1 = 2, advances to Boardwalk and buys
+   Bob rolls again
+   Rolls a 4 + 2 = 6, advances to Reading Railroad and pays rent
+   Buys some houses on boardwalk
+9. Alice selects Roll Dice
+   Rolls a 6 + 4 = 10, advances to Chance and gets Advance to Boardwalk
+   Pays a ton of rent
+CHANCE ORDER: 13 0
+COMMUNITY CHEST ORDER: 
+ALICE: 2 5 5 5 4 6 2 3 1 1 6 4
+BOB: 6 6 1 2 5 6 6 5 1 1 4 2

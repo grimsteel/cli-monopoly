@@ -22,38 +22,65 @@ void EmulatedBoardState::getPlayers() {
 
   string playerName;
   short playerBalance;
+  bool preCreatePlayers;
   unsigned short playerColor;
   unsigned short playerLocation;
   unsigned short propertyIndex;
   unsigned short numHouses;
   unsigned short dice1;
   unsigned short dice2;
+  unsigned short chanceItem;
 
-  while (getline(stateFile, line)) {
-    istringstream values(line);
-    
-    values >> playerName >> playerBalance >> playerColor >> playerLocation;
-    players.emplace_back(static_cast<unsigned char>(players.size()), playerName, playerBalance, static_cast<unsigned char>(playerLocation), static_cast<unsigned char>(playerColor));
-    Player *newPlayer = &(*(players.end() - 1));
-    
-    // Render the player
-    boardItems[newPlayer->boardItemIndex]->handlePlayer(newPlayer, this, &dummyRollInfo);
+  /*
+  <chance order>
+  <community chest order>
+  t (pre create players) | f
+  <player name> <balance> <color> <location> # if pre-create
+  <properties owned> # if pre-create
+  <dice rolls>
+  */
 
-    getline(stateFile, line);
-    values.str(line);
-    values.seekg(0);
-    
-    while (values >> propertyIndex) {
-      values >> numHouses;
+  // Chance/community chest
+  getline(stateFile, line);
+  istringstream chance(line);
+  while (chance >> chanceItem) {
+    chanceOrder.push(chanceItem);
+  }
+  getline(stateFile, line);
+  istringstream communityChest(line);
+  while (communityChest >> chanceItem) {
+    communityChestOrder.push(chanceItem);
+  }
 
-      Property* property = &properties[propertyIndex];
-      property->ownedBy = newPlayer->id;
-      property->drawPlayerOwn(newPlayer);
-      newPlayer->addProperty(property);
-      property->setHouses(static_cast<unsigned char>(numHouses));
+  getline(stateFile, line);
+  preCreatePlayers = line[0] == 't';
+
+  while (getline(stateFile, line)) {    
+    if (preCreatePlayers) {
+      istringstream values(line);
+      values >> playerName >> playerBalance >> playerColor >> playerLocation;
+      players.emplace_back(static_cast<unsigned char>(players.size()), playerName, playerBalance, static_cast<unsigned char>(playerLocation), static_cast<unsigned char>(playerColor));
+      Player *newPlayer = &(*(players.end() - 1));
+      
+      // Render the player
+      boardItems[newPlayer->boardItemIndex]->handlePlayer(newPlayer, this, &dummyRollInfo);
+  
+      getline(stateFile, line);
+      values.str(line);
+      values.seekg(0);
+      
+      while (values >> propertyIndex) {
+        values >> numHouses;
+  
+        Property* property = &properties[propertyIndex];
+        property->ownedBy = newPlayer->id;
+        property->drawPlayerOwn(newPlayer);
+        newPlayer->addProperty(property);
+        property->setHouses(static_cast<unsigned char>(numHouses));
+      }
+      getline(stateFile, line);
     }
 
-    getline(stateFile, line);
     istringstream dice(line);
 
     // Read in the dice rolls
@@ -66,12 +93,24 @@ void EmulatedBoardState::getPlayers() {
     }
   }
   doupdate();
+  if (players.size() == 0) {
+    // Prompt normally
+    BoardState::getPlayers();
+  }
 }
 
-unsigned short EmulatedBoardState::drawChance() {
-    unsigned short index = currentChanceIndex;
-    if (++currentChanceIndex >= 16) currentChanceIndex -= 16;
-    return index;
+unsigned short EmulatedBoardState::drawChance(RandomDraw::RandomDrawType type) {
+  if (type == RandomDraw::Chance && !chanceOrder.empty()) {
+    unsigned short value = chanceOrder.front();
+    chanceOrder.pop();
+    return value;
+  } else if (type == RandomDraw::CommunityChest && !communityChestOrder.empty()) {
+    unsigned short value = communityChestOrder.front();
+    communityChestOrder.pop();
+    return value;
+  } else {
+    return BoardState::drawChance(type);
+  }
 }
 
 unsigned char EmulatedBoardState::rollDice(unsigned char playerId) {

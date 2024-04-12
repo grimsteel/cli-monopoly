@@ -159,6 +159,13 @@ bool Player::queryAttributes(BoardState* boardState) {
   return addAnother;
 }
 
+void Player::addProperty(Property *property) {
+  properties.push_back(property);
+  mvwprintw(win, 1, 0, "%d Propert%s", static_cast<unsigned int>(properties.size()), properties.size() == 1 ? "y" : "ies");
+  wclrtoeol(win);
+  wnoutrefresh(win);
+}
+
 void Player::redraw() {
   wclear(win);
 

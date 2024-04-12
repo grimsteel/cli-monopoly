@@ -32,7 +32,7 @@ public:
   string name;
   short getBalance() { return balance; }
   void alterBalance(short value, string reason);
-  void addProperty(Property* property) { properties.push_back(property); }
+  void addProperty(Property* property);
   short getTotalValue();
   vector<Property*> properties;
 private:
