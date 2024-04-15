@@ -51,6 +51,7 @@ void BoardCenter::showDiceRoll(unsigned char roll1, unsigned char roll2) {
 }
 
 void BoardCenter::showChanceDraw(char text[3][19], RandomDraw::RandomDrawType type) {
+  std::this_thread::sleep_for(500ms);
   chtype bgStyle = COLOR_PAIR(type == RandomDraw::RandomDrawType::Chance ? BGT_ORANGE : BGT_YELLOW);
   wclear(win);
   wclear(diceWin);

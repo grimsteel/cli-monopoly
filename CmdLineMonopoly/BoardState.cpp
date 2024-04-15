@@ -483,13 +483,13 @@ bool BoardState::promptJailChoices(unsigned char playerId) {
 
       handleCharInput(ch);
 
-      if (ch == KEY_UP || ch == KEY_DOWN) {
+      if (ch == KEY_UP || ch == KEY_DOWN || ch == 'w' || ch == 's') {
         // The menu starts at y index = 2
         // We want to replace the char at x index = 0
         mvwadd_wch(win, 2 + selectedItem, 0, Icons::unselectedItem());
 
-        if (ch == KEY_UP) selectedItem--;
-        else if (ch == KEY_DOWN) selectedItem++; // KEY_DOWN = higher y value because high y is down
+        if (ch == KEY_UP || ch == 'w') selectedItem--;
+        else if (ch == KEY_DOWN || ch == 's') selectedItem++; // KEY_DOWN = higher y value because high y is down
 
         if (selectedItem >= numMenuItems) selectedItem = 0;
         else if (selectedItem < 0) selectedItem = numMenuItems - 1;
@@ -710,13 +710,13 @@ BoardState::NavigateListResult BoardState::navigateList(unsigned char maxItems, 
 
   handleCharInput(ch);
 
-  if (ch == KEY_DOWN && currentItem < maxItems - 1) {
+  if ((ch == KEY_DOWN || ch == 's') && currentItem < maxItems - 1) {
     return NavigateListResult::Down;
-  } else if (ch == KEY_UP && currentItem > 0) {
+  } else if ((ch == KEY_UP || ch == 'w') && currentItem > 0) {
     return NavigateListResult::Up;
-  } else if (ch == KEY_LEFT) {
+  } else if (ch == KEY_LEFT || ch == 'a') {
     return NavigateListResult::Left;
-  } else if (ch == KEY_RIGHT) {
+  } else if (ch == KEY_RIGHT || ch == 'd') {
     return NavigateListResult::Right;
   } else if (ch == KEY_ENTER || ch == '\n') {
     return NavigateListResult::Confirm;
@@ -753,13 +753,13 @@ char BoardState::drawMenu(bool showRollDice) {
 
     handleCharInput(ch);
 
-    if (ch == KEY_UP || ch == KEY_DOWN || (ch >= '1' && ch <= '0' + numMenuItems)) {
+    if (ch == KEY_UP || ch == KEY_DOWN || ch == 'w' || ch == 's' || (ch >= '1' && ch <= '0' + numMenuItems)) {
       // The menu starts at y index = 2
       // We want to replace the char at x index = 0
       mvwadd_wch(win, 2 + selectedItem, 0, Icons::unselectedItem());
 
-      if (ch == KEY_UP) selectedItem--;
-      else if (ch == KEY_DOWN) selectedItem++; // KEY_DOWN = higher y value because high y is down
+      if (ch == KEY_UP || ch == 'w') selectedItem--;
+      else if (ch == KEY_DOWN || ch == 's') selectedItem++; // KEY_DOWN = higher y value because high y is down
       else selectedItem = ch - '1';
 
       if (selectedItem >= numMenuItems) selectedItem = 0;

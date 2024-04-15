@@ -12,7 +12,7 @@ SRC_FILES := $(wildcard CmdLineMonopoly/*.cpp)
 OBJ_FILES := $(patsubst CmdLineMonopoly/%.cpp,bin/%.o,$(SRC_FILES))
 
 bin/CmdLineMonopoly: $(OBJ_FILES)
-	$(CXX) $(LDFLAGS) -o $@ $^
+	$(CXX) -o $@ $^ $(LDFLAGS)
 
 bin/%.o: CmdLineMonopoly/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<

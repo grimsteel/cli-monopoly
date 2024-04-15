@@ -19,7 +19,7 @@ bool showYesNoPrompt(WINDOW* win, BoardState* boardState, std::string prompt, in
     int ch = wgetch(win);
     boardState->handleCharInput(ch);
     if (ch == KEY_ENTER || ch == '\n') break;
-    else if (ch == KEY_LEFT || ch == KEY_RIGHT) result = !result;
+    else if (ch == KEY_LEFT || ch == KEY_RIGHT || ch == 'a' || ch == 'd') result = !result;
   }
   wmove(win, y, x);
   wclrtoeol(win);

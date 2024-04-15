@@ -118,11 +118,11 @@ bool Player::queryAttributes(BoardState* boardState) {
     boardState->handleCharInput(ch);
     
     if (ch == KEY_ENTER || ch == '\n') break;
-    else if (ch == KEY_LEFT || ch == KEY_RIGHT) {
+    else if (ch == KEY_LEFT || ch == KEY_RIGHT || ch == 'a' || ch == 'd') {
       // Update playerColorChar to the correct color and print it (this visually unselects the current one)
       SET_CCHAR_COLOR(playerColorChar, currentIndex + TXT_PURPLE);
       wadd_wch(win, &playerColorChar);
-      if (ch == KEY_RIGHT) {
+      if (ch == KEY_RIGHT || ch == 'd') {
         // Find the next unused color to the right
         unsigned long mask = ~rotr(usedColors, currentIndex + 1);
         currentIndex = (currentIndex + 1 + ctz(mask)) % NUM_TXT_COLORS;
