@@ -1,11 +1,10 @@
-# AP Computer Science Principles Create Task 2023
+# AP Computer Science Principles Create Task 2024
 
-## Windows Desktop Monopoly in C++
+## Command Line Monopoly in C++
 
-This project will have three main parts:
+This project will have two main parts:
 1. A common Monopoly library for managing game state and simulating actions
-2. A console interface to Monopoly using `pdcurses`.
-3. A Win32 GUI for interacting with Monopoly
+2. A console interface to Monopoly using `ncurses` (Linux) or `pdcurses` (Windows).
 
 ### Progress:
 - [x] Monopoly Library
@@ -17,8 +16,25 @@ This project will have three main parts:
   - [x] Properties
   - [x] Menu
   - [x] Stats
-- [ ] Win32 GUI
-- [ ] 
+- [x] Create Task Submittal Generation
+
+### Building
+
+`make`
+
+### Generating Create Task Submittal
+
+**Code PDF and Project Reference**: `make screenshots`
+
+**Video**:
+```shell
+mkfifo video.fifo
+asciinema rec video.cast
+emulation/video-game.sh
+
+# In another shell:
+emulation/video-controller.sh
+```
 
 ### Structure of a turn:
 
@@ -39,7 +55,6 @@ This project will have three main parts:
 1. If any of these actions reduced the player's balance to 0, they are declared bankrupt and cannot particpate further
 1. Next, the menu is presented again. The option to roll a dice will only appear if they rolled doubles
 1. If they roll doubles 3 times, they immediately go to jail, and are presented with the menu again
-1. 
 
 ### Property Value Calculation
 

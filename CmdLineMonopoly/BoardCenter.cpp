@@ -28,9 +28,18 @@ BoardCenter::~BoardCenter() {
 
 void BoardCenter::showDiceRoll(unsigned char roll1, unsigned char roll2) {
   wclear(win);
+  
+  // Draw a border around the dice
+  wattron(win, COLOR_PAIR(BGT_RED));
+  mvwhline(win, 0, 3, ' ', DICE_WIDTH + 2);
+  mvwhline(win, 4, 3, ' ', DICE_WIDTH + 2);
+  mvwvline(win, 0, 3, ' ', DICE_HEIGHT + 2);
+  mvwvline(win, 0, 15, ' ', DICE_HEIGHT + 2);
+  wattroff(win, COLOR_PAIR(BGT_RED));
+  
   wrefresh(win);
   wattron(diceWin, COLOR_PAIR(BGT_WHITE));
-  mvwaddwstr(diceWin, 0, 0, L"┌───┐ ┌───┐│   │ │   │└───┘ └───┘");
+  mvwaddwstr(diceWin, 0, 0, L"┌───┐ ┌───┐" L"│   │ │   │" L"└───┘ └───┘");
   wattroff(diceWin, COLOR_PAIR(BGT_WHITE));
   // clear the characters between the two dice
   mvwvline(diceWin, 0, DICE_WIDTH / 2, ' ', DICE_HEIGHT);
@@ -46,8 +55,15 @@ void BoardCenter::showDiceRoll(unsigned char roll1, unsigned char roll2) {
   mvwaddch(diceWin, 1, 2, roll1 + '0');
   mvwaddch(diceWin, 1, 8, roll2 + '0');
   wattroff(diceWin, COLOR_PAIR(BGT_WHITE));
+  
+  std::this_thread::sleep_for(100ms);
 
   wrefresh(diceWin);
+  mvwhline(win, 0, 3, ' ', DICE_WIDTH + 2);
+  mvwhline(win, 4, 3, ' ', DICE_WIDTH + 2);
+  mvwvline(win, 0, 3, ' ', DICE_HEIGHT + 2);
+  mvwvline(win, 0, 15, ' ', DICE_HEIGHT + 2);
+  wrefresh(win);
 }
 
 void BoardCenter::showChanceDraw(char text[3][19], RandomDraw::RandomDrawType type) {

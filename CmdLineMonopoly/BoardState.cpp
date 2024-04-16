@@ -799,13 +799,17 @@ void BoardState::movePlayerTo(unsigned char playerId, unsigned char boardItemInd
     // Give the salary
     player->alterBalance(200, "Salary");
   }
-
+  
   player->boardItemIndex = boardItemIndex;
-
-  mvwprintw(win, 1, 0, "You are on %s.", boardItems[player->boardItemIndex]->name.c_str());
-  wclrtoeol(win);
-  wnoutrefresh(win);
-  boardItems[player->boardItemIndex]->handlePlayer(player, this, rollInfo);
+  if (boardItemIndex == 255) {
+    drawHeader(playerId, "Jail");
+    jail.arrestPlayer(player, this);
+  } else {
+    drawHeader(playerId, boardItems[player->boardItemIndex]->name.c_str());
+    wclrtoeol(win);
+    wnoutrefresh(win);
+    boardItems[player->boardItemIndex]->handlePlayer(player, this, rollInfo);
+  }
 }
 
 unsigned short BoardState::drawChance(RandomDraw::RandomDrawType type) {
