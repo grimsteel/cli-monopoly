@@ -1,12 +1,13 @@
-# AP Computer Science Principles Create Task 2024
+# Command Line Monopoly in C++
 
-## Command Line Monopoly in C++
+>  AP CSP: 2023 - 2024
 
 This project will have two main parts:
 1. A common Monopoly library for managing game state and simulating actions
 2. A console interface to Monopoly using `ncurses` (Linux) or `pdcurses` (Windows).
 
 ### Progress:
+
 - [x] Monopoly Library
   - [x] Properties
   - [x] Money dealing (rent)
@@ -18,23 +19,28 @@ This project will have two main parts:
   - [x] Stats
 - [x] Create Task Submittal Generation
 
-### Building
+## Building
 
-`make`
+`make`: Compile and link entire project
 
-### Generating Create Task Submittal
+### Misc
 
-**Code PDF and Project Reference**: `make screenshots`
+`make screenshots`: Create a PDF file of the entire project along with PNG files of individual segments (these PNG files do not include any comments).
 
 **Video**:
+
 ```shell
 mkfifo video.fifo
+# This records the current terminal
 asciinema rec video.cast
 emulation/video-game.sh
 
 # In another shell:
+# This controls the game through video.fifo
 emulation/video-controller.sh
 ```
+
+## About
 
 ### Structure of a turn:
 
