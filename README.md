@@ -17,7 +17,6 @@ This project will have two main parts:
   - [x] Properties
   - [x] Menu
   - [x] Stats
-- [x] Create Task Submittal Generation
 
 ## Building
 
